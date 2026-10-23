@@ -1,25 +1,45 @@
-
+# Grundlagen
+## Backend
+* PHP-Webapplikation
+* RESTful
+* MVC-Architektur mit DAO für Datenbankzugriffe
+* Alle Attribute sind private, getter/setter erzeugen
+* Zugriff auch innerhalb der Klasse über getter/setter
+* Validierung der Werte erfolgt im Setter
+## Frontend
+* HTML, Javascript, CSS
+## Authentifikation
+* JWT
+* Token 2 Minuten gültig, Refresh-Token
+* Token im LocalStorage gespeichert
 # Stammdaten
 
 ## Personalien
-
-### Natürliche Person
+### Person
 - Vorname
 - Nachname
 - E-Mail
-- Geburtsdatum
 - Adresse (Strasse, Nr, PLZ, Ort)
+
+  
+### Aktive Spielerin
+Erbt von Person
+- Geburtsdatum
 - AHV-Nummer (nur Spielerinnen)
 - J+S-Nummer (Spielerinnen, Trainer)
-- Beziehung Eltern <-> Kind
+- Beziehung zu Erziehungsberechtigten (optional)
 - Mitgliederart (Aktiv, Passiv, Elternteil, …)
 - Einwilligung Foto
 
+### Erziehungsberechtigter
+Erbt von Person
+- Beziehung zu Kind(ern)
 
 ### Juristische Person (Sponsoren, Gemeinden)
+Erbt **nicht** von Person
 - Name
 - Adresse
-- Kontaktperson
+- Kontaktperson (Liste von Personen)
 - E-Mail
 
 
@@ -28,7 +48,7 @@
 - Bezeichnung
 - Art der Gruppe (Team, Funktionär, ...)
 ### Eigenschaften
- - Gruppen können Gruppen enthalten (z.B. Materialverantwortlicher, Funktionär)
+ - Gruppen können Gruppen enthalten (z.B. Materialverantwortlicher und Webmaster sind Funktionäre)
    - n:n-Beziehung
  - Zuordnung der Personen zu Gruppe   (n:n-Beziehung) 
  - Start / Ende (mehrfach für gleiche Gruppe möglich)
