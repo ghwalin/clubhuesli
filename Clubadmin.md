@@ -1,4 +1,6 @@
 # Grundlagen
+## Allgemein
+Vollständige PHPDoc in English
 ## Backend
 * PHP-Webapplikation
 * RESTful
