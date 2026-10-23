@@ -15,15 +15,21 @@
 # Stammdaten
 
 ## Personalien
-### Person
+### Natürliche Person
 - Vorname
 - Nachname
 - E-Mail
 - Adresse (Strasse, Nr, PLZ, Ort)
+### Juristische Person (Sponsoren, Gemeinden)
+Erbt **nicht** von Natürliche Person
+- Name
+- Adresse
+- Kontaktperson (Liste von Personen)
+- E-Mail
 
   
 ### Aktive Spielerin
-Erbt von Person
+Erbt von Natürliche Person
 - Geburtsdatum
 - AHV-Nummer (nur Spielerinnen)
 - J+S-Nummer (Spielerinnen, Trainer)
@@ -34,13 +40,6 @@ Erbt von Person
 ### Erziehungsberechtigter
 Erbt von Person
 - Beziehung zu Kind(ern)
-
-### Juristische Person (Sponsoren, Gemeinden)
-Erbt **nicht** von Person
-- Name
-- Adresse
-- Kontaktperson (Liste von Personen)
-- E-Mail
 
 
 ## Gruppen
