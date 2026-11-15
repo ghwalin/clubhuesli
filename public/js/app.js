@@ -4,7 +4,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const app = $('#app');
 let user = null, lookups = null;
 
-const ROLE_LABEL = {admin:'Admin', office:'Geschäftsstelle', trainer:'Trainer', communication:'Kommunikation', member:'Mitglied'};
+const ROLE_LABEL = {admin:'Admin', office:'Geschäftsstelle', coach:'Coach', communication:'Kommunikation', member:'Mitglied'};
 const KIND_LABEL = {team:'Team', functionary:'Funktionär', other:'Andere'};
 const has = (...r) => user && (user.roles.includes('admin') || r.some(x => user.roles.includes(x)));
 
@@ -49,7 +49,7 @@ const confirmDel = msg => confirm(msg || 'Wirklich löschen?');
 // ---------- layout ----------
 function nav() {
   const items = [['termine', 'Termine']];
-  if (has('office', 'trainer', 'communication')) items.push(['personen', 'Personen']);
+  if (has('office', 'coach', 'communication')) items.push(['personen', 'Personen']);
   items.push(['gruppen', 'Gruppen'], ['helfer', 'Helfereinsätze']);
   if (has('communication')) items.push(['mail', 'E-Mail']);
   if (has()) items.push(['benutzer', 'Benutzer']);
@@ -76,7 +76,7 @@ async function viewEvents() {
   const [events, mine, groups] = await Promise.all([get('events'), get('my-persons'), get('groups')]);
   const pn = Object.fromEntries(mine.map(p => [p.id, p]));
   const teams = groups.filter(g => g.kind === 'team');
-  const canCreate = has('trainer');
+  const canCreate = has('coach');
   app.innerHTML = `<div class="row sp"><h1>Termine</h1>${canCreate ? '<button id="new">+ Termin</button>' : ''}</div><div id="form"></div>` +
     (events.length ? events.map(e => {
       const closed = e.deadline && e.deadline < new Date().toISOString().replace('T', ' ');

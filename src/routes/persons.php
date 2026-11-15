@@ -18,9 +18,9 @@ route('GET', 'persons', function () {
     $where = [];
     $p = [];
     if (!can_edit_persons() && !has_role('communication')) {
-        // trainers: members of own teams; others: self + children
+        // coaches: members of own teams; others: self + children
         $ids = my_persons();
-        foreach (trainer_groups() as $g) foreach (group_persons($g) as $gp) $ids[] = (int) $gp['id'];
+        foreach (coach_groups() as $g) foreach (group_persons($g) as $gp) $ids[] = (int) $gp['id'];
         $ids = array_values(array_unique($ids)) ?: [0];
         $where[] = 'p.id IN (' . Db::in($ids) . ')';
         $p = $ids;
@@ -39,12 +39,12 @@ route('GET', 'persons', function () {
 route('GET', 'persons/{id}', function (int $id) {
     require_login();
     $allowed = can_edit_persons() || has_role('communication') || in_array($id, my_persons(), true);
-    if (!$allowed && has_role('trainer')) {
-        foreach (trainer_groups() as $g) if (in_array($id, array_column(group_persons($g), 'id'))) $allowed = true;
+    if (!$allowed && has_role('coach')) {
+        foreach (coach_groups() as $g) if (in_array($id, array_column(group_persons($g), 'id'))) $allowed = true;
     }
     if (!$allowed) throw new HttpError('Keine Berechtigung', 403);
     $p = Db::one('SELECT * FROM person WHERE id=?', [$id]) ?? throw new HttpError('Nicht gefunden', 404);
-    if (!can_edit_persons()) { unset($p['ahv_number']); if (!has_role('trainer')) unset($p['js_number']); }
+    if (!can_edit_persons()) { unset($p['ahv_number']); if (!has_role('coach')) unset($p['js_number']); }
     $p['parents'] = Db::all('SELECT p.id, p.first_name, p.last_name FROM person_relation r JOIN person p ON p.id=r.parent_id WHERE r.child_id=?', [$id]);
     $p['children'] = Db::all('SELECT p.id, p.first_name, p.last_name FROM person_relation r JOIN person p ON p.id=r.child_id WHERE r.parent_id=?', [$id]);
     $p['memberships'] = Db::all('SELECT gm.id, gm.group_id, g.name AS group_name, r.name AS role_name, gm.start_date, gm.end_date

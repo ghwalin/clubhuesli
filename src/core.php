@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/Db.php';
 
-const ROLES = ['admin', 'office', 'trainer', 'communication', 'member'];
+const ROLES = ['admin', 'office', 'coach', 'communication', 'member'];
 
 $GLOBALS['routes'] = [];
 
@@ -134,14 +134,14 @@ function group_persons(int $gid, ?string $onDate = null): array
     );
 }
 
-/** Group ids where the current user is a (current) trainer. */
-function trainer_groups(): array
+/** Group ids where the current user is a (current) coach. */
+function coach_groups(): array
 {
     $u = me();
     if (!$u || !$u['person_id']) return [];
     return array_map('intval', array_column(Db::all(
         'SELECT DISTINCT gm.group_id FROM group_member gm JOIN role r ON r.id=gm.role_id
-         WHERE gm.person_id=? AND r.is_trainer=1 AND gm.start_date<=CURDATE() AND (gm.end_date IS NULL OR gm.end_date>=CURDATE())',
+         WHERE gm.person_id=? AND r.is_coach=1 AND gm.start_date<=CURDATE() AND (gm.end_date IS NULL OR gm.end_date>=CURDATE())',
         [$u['person_id']]
     ), 'group_id'));
 }
@@ -177,7 +177,7 @@ function my_persons(): array
 
 function can_manage_team(int $gid): bool
 {
-    return has_role('admin') || (has_role('trainer') && in_array($gid, trainer_groups(), true));
+    return has_role('admin') || (has_role('coach') && in_array($gid, coach_groups(), true));
 }
 
 function dispatch(): void

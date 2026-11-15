@@ -26,7 +26,12 @@ Vollständige PHPDoc in English
 Erbt **nicht** von Natürliche Person
 - Name
 - Adresse
-- Kontaktperson (Liste von Personen)
+- Kontaktpersonen (1–n, eigenständige Datensätze, keine Verknüpfung zu natürlichen Personen)
+  - Vorname
+  - Nachname
+  - E-Mail
+  - Telefon (optional)
+  - Aufgabe (Freitext, optional, z. B. Finanzen, Sublimation)
 - E-Mail
 
   
@@ -34,7 +39,7 @@ Erbt **nicht** von Natürliche Person
 Erbt von Natürliche Person
 - Geburtsdatum
 - AHV-Nummer (nur Spielerinnen)
-- J+S-Nummer (Spielerinnen, Trainer)
+- J+S-Nummer (Spielerinnen, Coaches)
 - Beziehung zu Erziehungsberechtigten (optional)
 - Mitgliederart (Aktiv, Passiv, Elternteil, …)
 - Einwilligung Foto
@@ -53,7 +58,8 @@ Erbt von Person
    - n:n-Beziehung
  - Zuordnung der Personen zu Gruppe   (n:n-Beziehung) 
  - Start / Ende (mehrfach für gleiche Gruppe möglich)
- - Person hat Rolle (z.B. Trainer, Mitglied, Förderkader)
+ - Person hat Rolle (z.B. Coach, Spielerin, Förderkader)
+   - zusätzlich optional Funktion im Team als Freitext (z.B. Headcoach, Torhüterin)
 
 # Teilnahme (SpielerPlus)
 
@@ -78,7 +84,7 @@ Erbt von Person
 - Alle Personendaten bearbeiten
 - Gruppen erstellen, bearbeiten
 - Alle Daten bearbeiten
-## Trainer
+## Coach
 - Spiele und Trainings für sein Team erfassen
 - An/Abmeldungen für seine Spielerinnen erfassen
 ## Geschäftsstelle

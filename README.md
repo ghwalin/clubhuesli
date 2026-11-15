@@ -17,5 +17,5 @@ PHP 8 (PDO) JSON-API + Vanilla-JS-Frontend + MySQL 8. Anforderungen: `Clubadmin.
 4. Webroot auf `public/` setzen (bzw. `http://localhost/clubhuesli/public/`). `config/`, `src/`, `database/` nicht öffentlich ausliefern.
 
 ## Rollen
-admin (alles) · office/Geschäftsstelle (Personen, Gruppen, Zuordnung, Helfer) · trainer (Termine + An-/Abmeldungen seiner Teams; Trainer = Gruppenrolle mit `is_trainer`) · communication (E-Mail an Gruppen) · member (eigene/Kinder-Anmeldungen, Helfer eintragen).
+admin (alles) · office/Geschäftsstelle (Personen, Gruppen, Zuordnung, Helfer) · coach (Termine + An-/Abmeldungen seiner Teams; Coach = Gruppenrolle mit `is_coach`) · communication (E-Mail an Gruppen) · member (eigene/Kinder-Anmeldungen, Helfer eintragen).
 Benutzer werden über eine Person verknüpft; Team-/Kinder-Bezug ergibt sich aus Gruppenzuordnung und Eltern-Kind-Beziehung.

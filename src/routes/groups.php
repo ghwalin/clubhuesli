@@ -4,7 +4,7 @@ route('GET', 'groups', function () {
     $rows = Db::all('SELECT g.*, (SELECT COUNT(*) FROM group_member m WHERE m.group_id=g.id AND m.start_date<=CURDATE() AND (m.end_date IS NULL OR m.end_date>=CURDATE())) AS member_count
                      FROM grp g ORDER BY g.kind, g.name');
     if (!has_role('admin', 'office', 'communication')) {
-        $mine = array_merge(my_groups(), trainer_groups());
+        $mine = array_merge(my_groups(), coach_groups());
         $rows = array_values(array_filter($rows, fn($g) => in_array((int) $g['id'], $mine, true)));
     }
     return $rows;
@@ -61,4 +61,4 @@ route('POST', 'groups/{id}/members', function (int $gid) {
 route('PUT', 'members/{id}', function (int $id) { require_role('office'); update('group_member', $id, fields(['role_id', 'start_date', 'end_date'])); });
 route('DELETE', 'members/{id}', function (int $id) { require_role('office'); Db::exec('DELETE FROM group_member WHERE id=?', [$id]); });
 
-route('POST', 'roles', function () { require_role('admin'); $d = fields(['name', 'is_trainer']); required($d, ['name']); return ['id' => insert('role', $d)]; });
+route('POST', 'roles', function () { require_role('admin'); $d = fields(['name', 'is_coach']); required($d, ['name']); return ['id' => insert('role', $d)]; });

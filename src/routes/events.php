@@ -4,7 +4,7 @@ const EVENT_FIELDS = ['kind', 'title', 'location', 'starts_at', 'ends_at', 'note
 function visible_team_ids(): array
 {
     if (has_role('admin', 'office')) return array_map('intval', array_column(Db::all('SELECT id FROM grp WHERE kind="team"'), 'id'));
-    return array_values(array_unique([...my_groups(), ...trainer_groups()]));
+    return array_values(array_unique([...my_groups(), ...coach_groups()]));
 }
 
 route('GET', 'events', function () {
@@ -79,7 +79,7 @@ route('DELETE', 'events/{id}', function (int $id) {
     Db::exec('DELETE FROM event WHERE id=?', [$id]);
 });
 
-// An-/Abmeldung: Trainer für alle seiner Spielerinnen (auch nach Frist), Mitglieder für sich/Kinder bis zur Frist
+// An-/Abmeldung: Coach für alle seine Spielerinnen (auch nach Frist), Mitglieder für sich/Kinder bis zur Frist
 route('PUT', 'events/{id}/attendance/{pid}', function (int $id, int $pid) {
     $u = require_login();
     $e = Db::one('SELECT * FROM event WHERE id=?', [$id]) ?? throw new HttpError('Nicht gefunden', 404);

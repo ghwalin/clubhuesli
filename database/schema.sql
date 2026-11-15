@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS app_user (
 
 CREATE TABLE IF NOT EXISTS user_role (
   user_id INT UNSIGNED NOT NULL,
-  role ENUM('admin','office','trainer','communication','member') NOT NULL,
+  role ENUM('admin','office','coach','communication','member') NOT NULL,
   PRIMARY KEY (user_id, role),
   FOREIGN KEY (user_id) REFERENCES app_user(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS group_group (  -- Gruppe enthält Gruppe (n:n)
 CREATE TABLE IF NOT EXISTS role (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(60) NOT NULL UNIQUE,
-  is_trainer TINYINT(1) NOT NULL DEFAULT 0
+  is_coach TINYINT(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS group_member (  -- mehrfach pro Person/Gruppe, mit Start/Ende
@@ -155,4 +155,4 @@ CREATE TABLE IF NOT EXISTS mail_log (
 ) ENGINE=InnoDB;
 
 INSERT IGNORE INTO member_type (name) VALUES ('Aktiv'),('Passiv'),('Elternteil'),('Ehrenmitglied');
-INSERT IGNORE INTO role (name, is_trainer) VALUES ('Mitglied',0),('Trainer',1),('Förderkader',0),('Materialverantwortlicher',0);
+INSERT IGNORE INTO role (name, is_coach) VALUES ('Spielerin',0),('Coach',1),('Förderkader',0),('Materialverantwortlicher',0);
