@@ -1,0 +1,27 @@
+{
+    "name": "clubhuesli/clubadmin",
+    "description": "Clubadmin",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.3"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0",
+        "behat/behat": "^3.14"
+    },
+    "autoload": {
+        "psr-4": { "Clubhuesli\\": "src/" }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Clubhuesli\\Tests\\": "tests/unit/",
+            "Clubhuesli\\Behat\\": "tests/behat/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "behat": "behat"
+    },
+    "config": { "sort-packages": true }
+}

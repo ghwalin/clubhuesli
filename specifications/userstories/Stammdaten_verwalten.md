@@ -14,21 +14,21 @@ assignees: []
 
 ## 🧭 Kontext & Hintergrund
 
-- Grundlage: `Clubadmin.md`, Abschnitt «Stammdaten»
+- Grundlage: `specifications/models/people.md`
 - Berechtigt: Rollen Admin und Geschäftsstelle
 
 ## 🧩 Zugehörige User Stories
 
 - [ ] Natürliche Personen verwalten
-- [ ] Juristische Personen verwalten (inkl. Kontaktpersonen)
+- [ ] Juristische Personen verwalten (inkl. Kontaktperson)
 - [ ] Adressen verwalten
 
 ## ✅ Epic ist abgeschlossen, wenn
 
 - [ ] alle zugehörigen User Stories erledigt sind
-- [ ] natürliche und juristische Personen erfasst, bearbeitet, deaktiviert und gelöscht werden können
+- [ ] natürliche und juristische Personen erfasst, bearbeitet, ihr Vereins-Austritt erfasst und gelöscht werden können
 - [ ] nur die Rollen Admin und Geschäftsstelle Stammdaten ändern können
-- [ ] inaktive Personen beim E-Mail-Versand nicht mehr berücksichtigt werden
+- [ ] ausgetretene (inaktive) Personen beim E-Mail-Versand nicht mehr berücksichtigt werden
 
 ## 🚫 Nicht im Umfang (Out of Scope)
 

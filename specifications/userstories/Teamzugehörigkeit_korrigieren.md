@@ -19,10 +19,10 @@ assignees: []
 
 ## ✅ Akzeptanzkriterien
 
-- [ ] **Szenario 1:** Rolle korrigieren
-    - **Gegeben** Lea Meier wurde im Team «U12» irrtümlich als Spielerin erfasst
-    - **Wenn** ich die Rolle auf «Coach» ändere und speichere
-    - **Dann** ist sie in der Teamliste «U12» als Coach aufgeführt
+- [ ] **Szenario 1:** Rolle ist nicht änderbar
+    - **Gegeben** Lea Meier wurde im Team «U12» irrtümlich dem Spielerinnen-Datensatz als Spielerin zugeordnet, gemeint war ihr Coach-Datensatz
+    - **Wenn** ich die Zugehörigkeit bearbeite
+    - **Dann** kann ich die Rolle nicht ändern (sie ergibt sich aus der Personenart); ich lösche die Zugehörigkeit und ordne den Coach-Datensatz neu zu
 - [ ] **Szenario 2:** Funktion im Team ändern
     - **Gegeben** Anna Muster ist Spielerin im Team «U18» mit der Funktion «Torhüterin»
     - **Wenn** ich die Funktion auf «Torhüterin, Captain» ändere und speichere
@@ -46,4 +46,4 @@ assignees: []
 
 ## ❓ Offene Fragen
 
-- Was passiert beim Löschen mit bereits erfassten An-/Abmeldungen der Person für Trainings und Spiele dieses Teams?
+- Was passiert beim Löschen mit bereits erfassten Teilnahmen (Offen/Zusage/Absage) der Person an Anlässen dieses Teams (siehe `specifications/models/teamplan.md`)?

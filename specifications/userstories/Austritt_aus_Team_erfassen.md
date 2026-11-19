@@ -48,6 +48,7 @@ assignees: []
 
 ## ❓ Offene Fragen
 
-- Soll beim Deaktivieren einer Person (Vereinsaustritt) automatisch bei allen laufenden Teamzugehörigkeiten das Austrittsdatum gesetzt werden?
+- Soll beim Erfassen eines Vereins-Austrittsdatums (siehe «Natürliche Personen verwalten») automatisch bei allen laufenden Teamzugehörigkeiten das Austrittsdatum gesetzt werden?
 - Was passiert, wenn die Mitgliederart einer Person von «Aktiv» auf z. B. «Passiv» geändert wird, während sie noch in einem Team ist: verhindern, warnen oder Austritt automatisch setzen?
+- Modell-Frage: Soll die Zugehörigkeit pro Saison statt mit Austrittsdatum erfasst werden?
 - Braucht es einen Austrittsgrund (z. B. Teamwechsel, Pause, Verletzung)?

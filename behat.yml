@@ -1,0 +1,7 @@
+default:
+  suites:
+    default:
+      paths:
+        - '%paths.base%/tests/behat/features'
+      contexts:
+        - Clubhuesli\Behat\FeatureContext
