@@ -2,3 +2,6 @@ config/config.local.php
 /config/config.php
 .idea
 /userstories/_vorher/
+/vendor/
+.phpunit.cache/
+.phpunit.result.cache
