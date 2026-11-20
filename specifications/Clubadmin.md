@@ -28,8 +28,19 @@ Bezeichner und Kommentare in English
 - Alle Daten bearbeiten
 
 ## Coach
+- Name, Telefon, Email, Geburtsdatum des eigenen Teams sehen
 - Spiele und Trainings für sein Team erfassen
 - An/Abmeldungen für seine Spielerinnen erfassen
+- Telefonnummer / E-Mail lesen
+- Zugehörigkeit Spielerinnen zu anderen Teams
+
+## Spielerin
+- Spiele und Trainings anzeigen
+- An/Abmeldungen inkl. Bemerkung
+- Helfereinsätze melden
+
+## Eltern, Freunde
+- Helfereinsätze zu Gunsten der Spielerin melden
 
 ## Geschäftsstelle
 - Alle Personendaten bearbeiten
