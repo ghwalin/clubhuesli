@@ -12,6 +12,6 @@
 
 ## Teilnahme
 ### Attribut
-- Spielerin (Beziehung zu aktive Spielerin)
+- Spielerin (Beziehung zu Teammitglied)
 - Status (Offen, Zusage, Absage)
 - Bemerkung

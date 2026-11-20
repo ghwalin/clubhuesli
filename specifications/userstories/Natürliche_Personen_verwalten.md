@@ -9,76 +9,89 @@ assignees: []
 ## 📖 User Story
 
 **Als** Geschäftsführer
-**möchte ich** Aktiv-, Passiv- und Ehrenmitglieder sowie Erziehungsberechtigte als natürliche Personen erfassen und verwalten,
+**möchte ich** Teammitglieder (Spielerinnen und Coaches), Passiv- und Ehrenmitglieder sowie Erziehungsberechtigte als natürliche Personen erfassen und verwalten,
 **damit** wir sie den passenden Gruppen zuordnen und sie kontaktieren können.
 
 ## 🧭 Kontext & Hintergrund
 
 - Epic: Stammdaten verwalten
-- Verwandte Stories: Adressen verwalten, Juristische Personen verwalten
-- Grundlage: `specifications/models/people.md`. Die natürliche Person implementiert die Allgemeine Person (Mitgliederart, E-Mail, Telefon, Adresse, Eintritt/Austritt, Notiz).
-- Aktivmitglieder sind **Aktive Spielerinnen** und/oder **Coaches** (Spezialisierungen der natürlichen Person).
-  - Aktive Spielerin: Geburtsdatum, AHV-Nummer, J+S-Nummer, Einwilligung Foto (nur Minderjährige), Anzahl Helfereinsätze pro Saison.
-  - Coach: AHV-Nummer, J+S-Nummer.
-  - Spielerin und Coach sind getrennte Klassen. Ist eine Person beides, wird sie als **zwei Datensätze** erfasst (mit je eigenen Gruppenzugehörigkeiten).
-  - Die Shirtnummer gehört zur Teamzugehörigkeit der Spielerin, nicht zur Person (siehe «Mitglied einem Team zuordnen»).
-- Eintritt und Austritt aus dem Verein sind je ein Datum und können mehrfach vorkommen (Austritt und späterer Wiedereintritt). Ein separates Statusfeld gibt es nicht: «aktiv» heisst, dass ein Zeitraum aktuell läuft (Eintritt erreicht, Austritt leer oder noch nicht erreicht).
-- Minderjährige werden mit ihren Erziehungsberechtigten verknüpft (n:n – ein Kind kann mehrere Erziehungsberechtigte haben, ein Elternteil mehrere Kinder).
+- Verwandte Stories: Adressen verwalten, Juristische Personen verwalten, Mitglied einem Team zuordnen
+- Grundlage: `specifications/models/people.md`. Die natürliche Person implementiert die Allgemeine Person (Mitgliederart, E-Mail, Telefon, Adresse (optional), Notiz). Natürliche Personen sind z. B. Spielerinnen, Coaches, Elternteile, Helfer und Funktionäre.
+- Spielerinnen und Coaches sind **Teammitglieder** (Spezialisierung der natürlichen Person) mit AHV-Nummer, J+S-Nummer, Einwilligung Foto (nur Minderjährige) und Anzahl Helfereinsätze pro Saison.
+  - Ist eine Person Spielerin **und** Coach, gibt es nur **einen** Datensatz; die Rolle (Spielerin/Coach) wird pro Gruppenmitgliedschaft festgelegt (siehe «Mitglied einem Team zuordnen»).
+  - Die Shirtnummer gehört zur Teammitgliedschaft, nicht zur Person.
+- Eintritts- und Austrittsdatum gibt es bei der Person nicht mehr. Die Zugehörigkeit zum Verein ergibt sich aus den Gruppenmitgliedschaften pro Saison (siehe `specifications/models/groups.md`). Ein Austritt während der Saison wird an der Gruppenmitgliedschaft mit dem Attribut «Ausgetreten» erfasst.
+- Das **Geburtsdatum** ist ein Attribut der natürlichen Person. Es ist Pflicht für Teammitglieder und für Helfer (Prüfung des Mindestalters einer Einsatzart, siehe `specifications/models/helpers.md`), für alle anderen Personen optional.
+- **Austritt aus dem Verein:** Alle Gruppenmitgliedschaften der Person enden auf Ende der aktuellen Saison.
+- Minderjährig sein können nur Teammitglieder und einzelne Helfer (z. B. Geschwister, die mithelfen). Erziehungsberechtigte werden nur bei **minderjährigen Teammitgliedern** erfasst (n:n – ein Kind kann mehrere Erziehungsberechtigte haben, ein Elternteil mehrere Kinder). Bei minderjährigen Helfern wird das Geburtsdatum erfasst, aber keine Erziehungsberechtigten.
+- Die Einwilligung Foto wird nur bei minderjährigen Teammitgliedern erfasst; bei Helfern ist sie nicht relevant.
 
 ## ✅ Akzeptanzkriterien
 
-- [ ] **Szenario 1:** Aktivmitglied anlegen
+- [ ] **Szenario 1:** Teammitglied anlegen
     - **Gegeben** ich bin mit der Rolle Admin oder Geschäftsstelle angemeldet
-    - **Wenn** ich eine Person mit Vorname, Nachname, Mitgliederart «Aktiv», Geburtsdatum, Adresse und Eintrittsdatum erfasse und speichere
-    - **Dann** ist die Person als Aktive Spielerin gespeichert, gilt ab dem Eintrittsdatum als Vereinsmitglied und erscheint in der Personenliste
-- [ ] **Szenario 2:** Aktive Spielerin ohne Geburtsdatum
-    - **Gegeben** ich erfasse eine Aktive Spielerin
+    - **Wenn** ich eine Person mit Vorname, Nachname, Mitgliederart «Aktiv» und Geburtsdatum als Teammitglied erfasse und speichere
+    - **Dann** ist die Person als Teammitglied gespeichert, erscheint in der Personenliste und kann einem Team als Spielerin oder Coach zugeordnet werden
+- [ ] **Szenario 2:** Teammitglied ohne Geburtsdatum
+    - **Gegeben** ich erfasse ein Teammitglied
     - **Wenn** ich ohne Geburtsdatum speichere
-    - **Dann** wird nicht gespeichert und ich sehe die Meldung «Geburtsdatum ist für Aktive Spielerinnen erforderlich»
+    - **Dann** wird nicht gespeichert und ich sehe die Meldung «Geburtsdatum ist für Teammitglieder erforderlich»
 - [ ] **Szenario 3:** Passivmitglied, Ehrenmitglied oder Elternteil anlegen
     - **Gegeben** ich erfasse eine Person mit Mitgliederart «Passiv», «Ehrenmitglied» oder «Elternteil»
     - **Wenn** ich ohne Geburtsdatum, AHV- und J+S-Nummer speichere
-    - **Dann** wird die Person gespeichert; die Felder Geburtsdatum, AHV-Nummer, J+S-Nummer, Einwilligung Foto und Helfereinsätze werden bei diesen Mitgliederarten nicht angeboten
+    - **Dann** wird die Person gespeichert; das Geburtsdatum ist optional, die Felder AHV-Nummer, J+S-Nummer, Einwilligung Foto und Helfereinsätze werden bei diesen Personen nicht angeboten
+- [ ] **Szenario 3a:** Helfer ohne Geburtsdatum
+    - **Gegeben** Tom Muster (Bruder einer Spielerin) ist ohne Geburtsdatum erfasst
+    - **Wenn** ich ihn als Helfer einem Einsatz zuteilen will
+    - **Dann** wird die Zuteilung mit der Meldung «Für Helfer ist ein Geburtsdatum erforderlich» abgelehnt
+- [ ] **Szenario 3b:** Mindestalter für Helfer
+    - **Gegeben** die Einsatzart «Spielsekretär» verlangt ein Mindestalter von 16 Jahren und Tom Muster ist laut Geburtsdatum 14 Jahre alt
+    - **Wenn** ich ihn diesem Einsatz zuteilen will
+    - **Dann** wird die Zuteilung mit der Meldung «Mindestalter für diesen Einsatz: 16 Jahre» abgelehnt
 - [ ] **Szenario 4:** Ungültige AHV-Nummer
-    - **Gegeben** ich erfasse eine Aktive Spielerin oder einen Coach
+    - **Gegeben** ich erfasse ein Teammitglied
     - **Wenn** ich eine AHV-Nummer mit falschem Format oder falscher Prüfziffer eingebe
     - **Dann** wird nicht gespeichert und ich sehe die Meldung «Bitte gültige AHV-Nummer eingeben (756.XXXX.XXXX.XX)»
 - [ ] **Szenario 5:** Minderjährige mit Erziehungsberechtigten verknüpfen
     - **Gegeben** eine minderjährige Spielerin und ein Elternteil sind erfasst
     - **Wenn** ich das Elternteil als erziehungsberechtigt mit der Spielerin verknüpfe
     - **Dann** ist die Beziehung bei beiden Personen sichtbar
-- [ ] **Szenario 6:** Person bearbeiten
+- [ ] **Szenario 6:** Erziehungsberechtigte nur bei Minderjährigen
+    - **Gegeben** ein Teammitglied ist laut Geburtsdatum volljährig
+    - **Wenn** ich es bearbeite
+    - **Dann** kann ich keine Erziehungsberechtigten verknüpfen; dasselbe gilt für Personen, die keine Teammitglieder sind (z. B. Helfer)
+- [ ] **Szenario 7:** Person bearbeiten
     - **Gegeben** eine Person ist gespeichert
     - **Wenn** ich z. B. Name, Mitgliederart oder Foto-Einwilligung ändere und speichere
     - **Dann** werden die Änderungen gespeichert und überall angezeigt
-- [ ] **Szenario 7:** Austritt aus dem Verein erfassen
-    - **Gegeben** eine Person ist seit dem 01.08.2024 Vereinsmitglied (ohne Austrittsdatum)
-    - **Wenn** ich als Austrittsdatum den 30.06.2026 erfasse (z. B. bei Austritt oder Tod)
-    - **Dann** gilt sie ab dem 01.07.2026 als inaktiv, erscheint ab dann nicht mehr als Empfängerin beim E-Mail-Versand, und die Daten sowie die Mitgliedschaftshistorie bleiben erhalten
-- [ ] **Szenario 8:** Person löschen
+- [ ] **Szenario 8:** Austritt aus dem Verein
+    - **Gegeben** Anna Muster ist in der aktuellen Saison 2026/27 (bis 30.06.2027) Mitglied der Gruppen «U18» und «Passivmitglieder»
+    - **Wenn** ich «Austritt aus dem Verein» wähle und die Sicherheitsabfrage bestätige
+    - **Dann** wird bei allen ihren Mitgliedschaften der aktuellen Saison «Ausgetreten» auf das Saisonende 30.06.2027 gesetzt; sie bleibt bis dahin in ihren Gruppen, gilt ab dem 01.07.2027 als inaktiv und erscheint ab dann nicht mehr als Empfängerin beim E-Mail-Versand; ihre Daten und Mitgliedschaften bleiben erhalten
+- [ ] **Szenario 8a:** Austritt aus dem Verein mit bereits erfasstem Teamaustritt
+    - **Gegeben** bei Anna Muster ist im Team «U18» bereits «Ausgetreten» mit dem Datum 31.12.2026 erfasst
+    - **Wenn** ich «Austritt aus dem Verein» wähle
+    - **Dann** bleibt das frühere Datum 31.12.2026 bei dieser Mitgliedschaft erhalten; nur die übrigen Mitgliedschaften enden auf Saisonende
+- [ ] **Szenario 8b:** Austritt aus dem Verein mit Mitgliedschaften in künftigen Saisons
+    - **Gegeben** Anna Muster ist bereits für die Saison 2027/28 dem Team «U18» zugeordnet
+    - **Wenn** ich «Austritt aus dem Verein» wähle
+    - **Dann** werden die Mitgliedschaften in künftigen Saisons entfernt
+- [ ] **Szenario 9:** Person löschen
     - **Gegeben** eine Person ist gespeichert
     - **Wenn** ich sie lösche und die Sicherheitsabfrage bestätige
-    - **Dann** werden die Person sowie ihre Beziehungen, Gruppenzugehörigkeiten, Teilnahmen und Helfereinsätze entfernt
-- [ ] **Szenario 9:** Wiedereintritt
-    - **Gegeben** eine Person war vom 01.08.2020 bis 30.06.2023 Vereinsmitglied
-    - **Wenn** ich ein neues Eintrittsdatum 01.08.2025 erfasse
-    - **Dann** werden beide Zeiträume gespeichert, und die Person gilt ab dem 01.08.2025 wieder als aktiv
-- [ ] **Szenario 10:** Austrittsdatum vor Eintrittsdatum
-    - **Gegeben** ein Mitgliedschaftszeitraum mit Eintrittsdatum 01.08.2026
-    - **Wenn** ich als Austrittsdatum den 31.07.2026 erfasse
-    - **Dann** wird nicht gespeichert und ich sehe die Meldung «Austrittsdatum darf nicht vor dem Eintrittsdatum liegen»
-- [ ] **Szenario 11:** Notiz erfassen
+    - **Dann** werden die Person sowie ihre Beziehungen, Gruppenmitgliedschaften, Teilnahmen und Helfereinsätze entfernt
+- [ ] **Szenario 10:** Notiz erfassen
     - **Gegeben** ich bearbeite eine Person
     - **Wenn** ich im Notizfeld einen Text eingebe und speichere
     - **Dann** wird die Notiz gespeichert und bei der Person angezeigt
-- [ ] **Szenario 12:** Coach anlegen
-    - **Gegeben** ich erfasse eine Person mit Mitgliederart «Aktiv» als Coach
-    - **Wenn** ich Vorname, Nachname, Adresse, Eintrittsdatum sowie AHV- und J+S-Nummer eingebe und speichere
-    - **Dann** ist die Person als Coach gespeichert; Geburtsdatum, Einwilligung Foto und Helfereinsätze werden nicht angeboten
-- [ ] **Szenario 13:** Einwilligung Foto nur bei Minderjährigen
-    - **Gegeben** eine Aktive Spielerin ist laut Geburtsdatum minderjährig
+- [ ] **Szenario 11:** Spielerin und Coach in einem Datensatz
+    - **Gegeben** Lea Meier ist als Teammitglied erfasst
+    - **Wenn** sie im Team «U18» als Spielerin und im Team «U12» als Coach zugeordnet wird
+    - **Dann** gibt es für Lea Meier weiterhin nur einen Personen-Datensatz; Adress- und Kontaktänderungen gelten für beide Rollen
+- [ ] **Szenario 12:** Einwilligung Foto nur bei minderjährigen Teammitgliedern
+    - **Gegeben** ein Teammitglied ist laut Geburtsdatum minderjährig
     - **Wenn** ich sie bearbeite
-    - **Dann** kann ich die Einwilligung Foto (Ja/Nein, Standard: Nein) erfassen; bei volljährigen Spielerinnen wird das Feld nicht angeboten
+    - **Dann** kann ich die Einwilligung Foto (Ja/Nein, Standard: Nein) erfassen; bei volljährigen Teammitgliedern und bei Personen, die keine Teammitglieder sind (z. B. Helfer), wird das Feld nicht angeboten
 
 ## 🗂️ Datenanforderungen / Attribute
 
@@ -89,47 +102,37 @@ assignees: []
 | Vorname               | Text                       | ✅      | 2 – 50 Zeichen                                                   | Anna              |
 | Nachname              | Text                       | ✅      | 2 – 50 Zeichen                                                   | Muster            |
 | Mitgliederart         | Enum                       | ✅      | Aktiv / Passiv / Elternteil / Ehrenmitglied (erweiterbar)        | Aktiv             |
-| Eintrittsdatum        | Datum (mehrfach)           | ✅      | mindestens ein Zeitraum; Zeiträume überschneiden sich nicht      | 01.08.2024        |
-| Austrittsdatum        | Datum (mehrfach)           | ❌      | ≥ Eintrittsdatum desselben Zeitraums                             | 30.06.2026        |
-| Erziehungsberechtigte | Verknüpfung (n:n, optional) | ❌     | nur mit natürlichen Personen; nicht mit sich selbst              | Peter Muster      |
-| Kinder                | Verknüpfung (Gegenrichtung) | ❌     | ergibt sich aus «Erziehungsberechtigte»                          | Anna Muster       |
-| Adresse, E-Mail, Telefon | siehe «Adressen verwalten» | ✅    | –                                                                | –                 |
+| Geburtsdatum          | Datum                      | bedingt | Pflicht für Teammitglieder und Helfer; nicht in der Zukunft      | 12.05.2002        |
+| Kinder                | Verknüpfung (Gegenrichtung) | ❌     | ergibt sich aus «Erziehungsberechtigte» der Teammitglieder       | Anna Muster       |
+| Adresse, E-Mail, Telefon | siehe «Adressen verwalten» | –     | Adresse optional                                                 | –                 |
 | Notiz                 | Text                       | ❌      | Freitext                                                         | Allergie: Nüsse   |
 
-### Zusätzlich bei Aktiven Spielerinnen
+### Zusätzlich bei Teammitgliedern (Spielerinnen und Coaches)
 
 | Attribut                      | Typ     | Pflicht | Validierung / Regeln                                              | Beispiel          |
 |-------------------------------|---------|---------|-------------------------------------------------------------------|-------------------|
-| Geburtsdatum                  | Datum   | ✅      | nicht in der Zukunft                                              | 12.05.2002        |
 | AHV-Nummer                    | Text    | ❌      | Format 756.XXXX.XXXX.XX, Prüfziffer (EAN-13)                      | 756.1234.5678.97  |
 | J+S-Nummer                    | Text    | ❌      | max. 30 Zeichen                                                   | 1234567           |
 | Einwilligung Foto             | Ja/Nein | bedingt | nur bei Minderjährigen; Standard: Nein                            | Ja                |
+| Erziehungsberechtigte         | Verknüpfung (n:n) | ❌ | nur bei Minderjährigen; nur mit natürlichen Personen; nicht mit sich selbst | Peter Muster |
 | Anzahl Helfereinsätze pro Saison | Zahl | ❌      | ganze Zahl ≥ 0 (Pflichteinsätze, siehe Modell «Helpers»)          | 2                 |
 
-### Zusätzlich bei Coaches (Mitgliederart «Aktiv»)
-
-| Attribut   | Typ  | Pflicht | Validierung / Regeln                             | Beispiel          |
-|------------|------|---------|--------------------------------------------------|-------------------|
-| AHV-Nummer | Text | ❌      | Format 756.XXXX.XXXX.XX, Prüfziffer (EAN-13)     | 756.1234.5678.97  |
-| J+S-Nummer | Text | ❌      | max. 30 Zeichen                                  | 1234567           |
-
-**Abgeleitet:** Status aktiv/inaktiv ergibt sich aus den Mitgliedschaftszeiträumen (Eintritt erreicht, Austritt leer oder noch nicht erreicht).
+**Abgeleitet:** Minderjährig ergibt sich aus dem Geburtsdatum. Die Person gilt als aktives Vereinsmitglied, wenn sie in der aktuellen Saison Mitglied mindestens einer Gruppe ist und dort «Ausgetreten» leer oder noch nicht erreicht ist.
 
 ## 🛠️ Technische Hinweise
 
-- Klassen gemäss `specifications/models/people.md`: `AbstractPerson` (abstrakt), `NaturalPerson`, `ActivePlayer` und `Coach` (beide erben von `NaturalPerson`).
-- Eintritt/Austritt sind eine eigene Liste von Zeiträumen pro Person (1:n).
-- Die Beziehung Erziehungsberechtigte ↔ Kinder ist eine n:n-Beziehung zwischen natürlichen Personen.
-- Validierung (Pflichtfelder je Mitgliederart, AHV-Prüfziffer, Datumsreihenfolge) erfolgt in den Settern.
+- Klassen gemäss `specifications/models/people.md`: `AbstractPerson` (abstrakt), `NaturalPerson` und `TeamMember` (erbt von `NaturalPerson`). Die bisherigen Klassen `ActivePlayer` und `Coach` entfallen.
+- Das Geburtsdatum ist ein Attribut von `NaturalPerson`; die Pflicht für Teammitglieder wird in `TeamMember` geprüft, die Pflicht für Helfer beim Zuteilen zu einem Einsatz.
+- Die Einwilligung Foto ist ein Attribut von `TeamMember`.
+- Die Beziehung Erziehungsberechtigte ↔ Kinder ist eine n:n-Beziehung zwischen `TeamMember` (Kind) und `NaturalPerson` (erziehungsberechtigte Person).
+- Validierung (Pflichtfelder je Personenart, AHV-Prüfziffer, Minderjährigkeit) erfolgt in den Settern.
 
 ## ❓ Offene Fragen
 
-- Ist bei Minderjährigen mindestens ein Erziehungsberechtigter Pflicht? (Das Alter ist nur bei Aktiven Spielerinnen über das Geburtsdatum bekannt.)
-- Soll beim Erfassen eines Vereins-Austrittsdatums automatisch bei allen laufenden Gruppenzugehörigkeiten ein Enddatum gesetzt werden?
+- Ist bei minderjährigen Teammitgliedern mindestens ein Erziehungsberechtigter Pflicht?
 - Kann eine Person mehrere Mitgliederarten gleichzeitig haben (z. B. Passivmitglied **und** Elternteil)?
-- Wie werden die zwei Datensätze einer Person, die Spielerin und Coach ist, erkannt bzw. verknüpft (gleiche Adresse/E-Mail, Duplikatwarnung, Änderungen von Adresse in beiden Datensätzen)?
 
 ## 🔒 Nicht-funktionale Anforderungen
 
 - Die AHV-Nummer ist besonders sensibel: Nur Admin und Geschäftsstelle dürfen sie sehen; sie erscheint nicht in Listen oder Exporten für Coaches.
-- Fotos von Minderjährigen dürfen nur mit «Einwilligung Foto = Ja» veröffentlicht werden.
+- Fotos von minderjährigen Teammitgliedern dürfen nur mit «Einwilligung Foto = Ja» veröffentlicht werden.

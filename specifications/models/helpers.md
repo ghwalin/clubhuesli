@@ -12,8 +12,8 @@
 ## Einsatz
 ### Attribute
 - Einsatzart (Beziehung)
-- Helfer (Beziehung zu natürliche Person)
-- Gutschrift (Beziehung zu aktive Spielerin)
+- Helfer (Beziehung zu natürliche Person; Geburtsdatum erforderlich für die Prüfung des Mindestalters)
+- Gutschrift (Beziehung zu Teammitglied)
 - Bemerkung
 
 ## Einsatzart
@@ -29,10 +29,10 @@
 ## Anlassart
 ### Attribute
 - Bezeichnung
-- Einsätze (mehrfach)
+- Einsätze
   - Einsatzart
   - Anzahl
 
 ## Offene Fragen
 - Anlässe mit mehreren Schichten (Tagesrunde, Trophy, ...)
-- Abgleich mit Anzahl Pflichteinsätze der aktiven Spielerinnen
+- Abgleich mit Anzahl Pflichteinsätze der Teammitglieder

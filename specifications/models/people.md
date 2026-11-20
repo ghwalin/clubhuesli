@@ -4,15 +4,19 @@ Wird im Datenmodell als Entität abgebildet mit Beziehungen zu den spezialisiert
 - Mitgliederart (Aktiv, Passiv, Elternteil, Sponsor, …)
 - E-Mail
 - Telefonnummer
-- Adresse (Strasse, Nr, Adresszusatz, PLZ, Ort, Land)
-- Eintritt/Austrittdatum, mehrfach vorhanden (redundant)
+- Adresse (optional)
+  - Strasse, Nr
+  - Adresszusatz
+  - PLZ
+  - Ort
+  - Land
 - Notizfeld
 
 ## Natürliche Person
-Implementiert allgemeine Person
+Implementiert allgemeine Person (Spielerin, Coach, Elternteil, Helfer, Funktionär, ...)
 - Vorname
 - Nachname
-- Beziehung zu Erziehungsberechtigten (optional)
+- Geburtsdatum (Pflicht für Teammitglieder und Helfer, sonst optional)
 - Beziehung zu Kindern (optional)
 
 ## Juristische Person (Sponsoren, Gemeinden)
@@ -21,16 +25,10 @@ Implementiert allgemeine Person
 - Kontaktperson (Vorname, Nachname)
 - Unterstützung (Textarea)
 
-## Aktive Spielerin
+## Teammitglieder (bisher: Aktive Spielerin / Coach)
 Erbt von natürliche Person
-- Geburtsdatum
-- AHV-Nummer
-- Einwilligung Foto (nur minderjährige)  pro Saison / Team?
-- Anzahl Helfereinsätze pro Saison
-
-## Coach
-Erbt von natürliche Person
-Spielerin und Coach sind getrennte Klassen. 
-Im Datenmodell existieren beide als Natürliche Person mit Beziehung(en) zu Spielerin bzw. Coach. (Spezialisierung)
 - AHV-Nummer
 - J+S-Nummer
+- Beziehung zu Erziehungsberechtigten (optional, nur minderjährige)
+- Einwilligung Foto (nur minderjährige)
+- Anzahl Helfereinsätze pro Saison
