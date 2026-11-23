@@ -15,7 +15,8 @@ Bezeichner und Kommentare in English
 * HTML, Javascript, CSS
 
 ## Authentifikation
-* Passkey (primär), E-Mail/Telefon und Passwort (backup)
+* Personen mit Chilis-Konto: OAuth2.0 mit Microsoft Identity Platform (Azure AD B2C)
+* Andere Personen: Passkey (primär), E-Mail/Telefon und Passwort (backup)
 * JWT
 * Token 2 Minuten gültig, Refresh-Token
 * Refresh-Token im LocalStorage gespeichert, 30 Tage
@@ -39,8 +40,8 @@ Bezeichner und Kommentare in English
 - An/Abmeldungen inkl. Bemerkung
 - Helfereinsätze melden
 
-## Eltern, Freunde
-- Helfereinsätze zu Gunsten der Spielerin melden
+## Eltern, Freunde (Helfer)
+- Helfereinsätze zu Gunsten einer Spielerin melden
 
 ## Geschäftsstelle
 - Alle Personendaten bearbeiten
