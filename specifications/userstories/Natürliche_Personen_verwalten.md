@@ -17,7 +17,7 @@ assignees: []
 - Epic: Stammdaten verwalten
 - Verwandte Stories: Adressen verwalten, Juristische Personen verwalten, Mitglied einem Team zuordnen
 - Grundlage: `specifications/models/people.md`. Die natürliche Person implementiert die Allgemeine Person (Mitgliederart, E-Mail, Telefon, Adresse (optional), Notiz). Natürliche Personen sind z. B. Spielerinnen, Coaches, Elternteile, Helfer und Funktionäre.
-- Spielerinnen und Coaches sind **Teammitglieder** (Spezialisierung der natürlichen Person) mit AHV-Nummer, J+S-Nummer, Einwilligung Foto (nur Minderjährige) und Anzahl Helfereinsätze pro Saison.
+- Spielerinnen und Coaches sind **Teammitglieder** (Spezialisierung der natürlichen Person) mit AHV-Nummer, J+S-Nummer und Einwilligung Foto (nur Minderjährige). Die «Anzahl Helfereinsätze pro Saison» wird später behandelt (siehe `specifications/models/helpers.md`).
   - Ist eine Person Spielerin **und** Coach, gibt es nur **einen** Datensatz; die Rolle (Spielerin/Coach) wird pro Gruppenmitgliedschaft festgelegt (siehe «Mitglied einem Team zuordnen»).
   - Die Shirtnummer gehört zur Teammitgliedschaft, nicht zur Person.
 - Eintritts- und Austrittsdatum gibt es bei der Person nicht mehr. Die Zugehörigkeit zum Verein ergibt sich aus den Gruppenmitgliedschaften pro Saison (siehe `specifications/models/groups.md`). Ein Austritt während der Saison wird an der Gruppenmitgliedschaft mit dem Attribut «Ausgetreten» erfasst.
@@ -39,7 +39,7 @@ assignees: []
 - [ ] **Szenario 3:** Passivmitglied, Ehrenmitglied oder Elternteil anlegen
     - **Gegeben** ich erfasse eine Person mit Mitgliederart «Passiv», «Ehrenmitglied» oder «Elternteil»
     - **Wenn** ich ohne Geburtsdatum, AHV- und J+S-Nummer speichere
-    - **Dann** wird die Person gespeichert; das Geburtsdatum ist optional, die Felder AHV-Nummer, J+S-Nummer, Einwilligung Foto und Helfereinsätze werden bei diesen Personen nicht angeboten
+    - **Dann** wird die Person gespeichert; das Geburtsdatum ist optional, die Felder AHV-Nummer, J+S-Nummer und Einwilligung Foto werden bei diesen Personen nicht angeboten
 - [ ] **Szenario 3a:** Helfer ohne Geburtsdatum
     - **Gegeben** Tom Muster (Bruder einer Spielerin) ist ohne Geburtsdatum erfasst
     - **Wenn** ich ihn als Helfer einem Einsatz zuteilen will
@@ -115,7 +115,6 @@ assignees: []
 | J+S-Nummer                    | Text    | ❌      | max. 30 Zeichen                                                   | 1234567           |
 | Einwilligung Foto             | Ja/Nein | bedingt | nur bei Minderjährigen; Standard: Nein                            | Ja                |
 | Erziehungsberechtigte         | Verknüpfung (n:n) | ❌ | nur bei Minderjährigen; nur mit natürlichen Personen; nicht mit sich selbst | Peter Muster |
-| Anzahl Helfereinsätze pro Saison | Zahl | ❌      | ganze Zahl ≥ 0 (Pflichteinsätze, siehe Modell «Helpers»)          | 2                 |
 
 **Abgeleitet:** Minderjährig ergibt sich aus dem Geburtsdatum. Die Person gilt als aktives Vereinsmitglied, wenn sie in der aktuellen Saison Mitglied mindestens einer Gruppe ist und dort «Ausgetreten» leer oder noch nicht erreicht ist.
 

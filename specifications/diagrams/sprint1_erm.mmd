@@ -1,0 +1,44 @@
+erDiagram
+    PERSON ||--o| NATURAL_PERSON : "ist"
+    PERSON ||--o| LEGAL_PERSON : "ist"
+    NATURAL_PERSON ||--o| TEAM_MEMBER : "ist"
+    TEAM_MEMBER ||--o{ GUARDIANSHIP : "Kind"
+    NATURAL_PERSON ||--o{ GUARDIANSHIP : "Erziehungsberechtigte"
+
+    PERSON {
+        int id PK
+        string person_type "NATURAL | LEGAL"
+        string member_type
+        string email "nicht eindeutig"
+        string phone
+        string street
+        string house_number
+        string address_addition
+        string zip
+        string city
+        string country "ISO, Standard CH"
+        text note
+    }
+    NATURAL_PERSON {
+        int person_id PK, FK
+        string first_name
+        string last_name
+        date birth_date
+    }
+    TEAM_MEMBER {
+        int person_id PK, FK
+        string ahv_number
+        string js_number
+        boolean photo_consent
+    }
+    LEGAL_PERSON {
+        int person_id PK, FK
+        string name
+        string contact_first_name
+        string contact_last_name
+        text support
+    }
+    GUARDIANSHIP {
+        int child_id PK, FK
+        int guardian_id PK, FK
+    }

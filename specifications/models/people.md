@@ -31,4 +31,6 @@ Erbt von natürliche Person
 - J+S-Nummer
 - Beziehung zu Erziehungsberechtigten (optional, nur minderjährige)
 - Einwilligung Foto (nur minderjährige)
-- Anzahl Helfereinsätze pro Saison
+
+## Offene Fragen
+- Anzahl Helfereinsätze pro Saison: wird später behandelt (zusammen mit dem Modell «Helpers»)

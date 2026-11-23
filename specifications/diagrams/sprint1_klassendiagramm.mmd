@@ -1,0 +1,52 @@
+classDiagram
+    direction TB
+
+    class AbstractPerson {
+        <<abstract>>
+        -int id
+        -MemberType memberType
+        -string email
+        -string phone
+        -string street
+        -string houseNumber
+        -string addressAddition
+        -string zip
+        -string city
+        -string country
+        -string note
+    }
+
+    class NaturalPerson {
+        -string firstName
+        -string lastName
+        -date birthDate
+        +isMinor() bool
+    }
+
+    class TeamMember {
+        -string ahvNumber
+        -string jsNumber
+        -bool photoConsent
+    }
+
+    class LegalPerson {
+        -string name
+        -string contactFirstName
+        -string contactLastName
+        -string support
+    }
+
+    class MemberType {
+        <<enumeration>>
+        ACTIVE
+        PASSIVE
+        PARENT
+        HONORARY
+        SPONSOR
+    }
+
+    AbstractPerson <|-- NaturalPerson
+    AbstractPerson <|-- LegalPerson
+    NaturalPerson <|-- TeamMember
+    AbstractPerson --> MemberType : memberType
+    TeamMember "0..*" -- "0..*" NaturalPerson : children / guardians
