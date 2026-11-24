@@ -1,0 +1,188 @@
+<section class="card">
+    <header class="card__header">
+        <h1 id="form-title">Person</h1>
+        <div class="card__actions">
+            <a class="button" href="#/persons">Zurück zur Liste</a>
+        </div>
+    </header>
+
+    <form id="person-form" novalidate>
+        <p class="form-error" id="form-error" hidden></p>
+
+        <fieldset data-section="natural">
+            <legend>Natürliche Person</legend>
+
+            <div class="grid">
+                <div class="field">
+                    <label for="firstName">Vorname *</label>
+                    <input type="text" id="firstName" name="firstName" maxlength="50">
+                    <p class="field-error" data-error-for="firstName"></p>
+                </div>
+                <div class="field">
+                    <label for="lastName">Nachname *</label>
+                    <input type="text" id="lastName" name="lastName" maxlength="50">
+                    <p class="field-error" data-error-for="lastName"></p>
+                </div>
+                <div class="field field--checkbox">
+                    <label>
+                        <input type="checkbox" id="teamMember" name="teamMember">
+                        Teammitglied (Spielerin oder Coach)
+                    </label>
+                    <p class="hint">
+                        Die Rolle Spielerin oder Coach wird pro Gruppenmitgliedschaft festgelegt.
+                    </p>
+                </div>
+                <div class="field">
+                    <label for="birthDate">Geburtsdatum <span data-when="teamMember">*</span></label>
+                    <input type="date" id="birthDate" name="birthDate">
+                    <p class="hint" id="age-hint"></p>
+                    <p class="field-error" data-error-for="birthDate"></p>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset data-section="legal">
+            <legend>Juristische Person</legend>
+
+            <div class="grid">
+                <div class="field">
+                    <label for="name">Name *</label>
+                    <input type="text" id="name" name="name" maxlength="200">
+                    <p class="field-error" data-error-for="name"></p>
+                </div>
+                <div class="field">
+                    <label for="contactFirstName">Kontaktperson Vorname *</label>
+                    <input type="text" id="contactFirstName" name="contactFirstName" maxlength="50">
+                    <p class="field-error" data-error-for="contactFirstName"></p>
+                </div>
+                <div class="field">
+                    <label for="contactLastName">Kontaktperson Nachname *</label>
+                    <input type="text" id="contactLastName" name="contactLastName" maxlength="50">
+                    <p class="field-error" data-error-for="contactLastName"></p>
+                </div>
+                <div class="field field--wide">
+                    <label for="support">Unterstützung</label>
+                    <textarea id="support" name="support" rows="2"
+                              placeholder="z. B. Trikotsponsoring 2026–2028"></textarea>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Mitgliedschaft</legend>
+            <div class="grid">
+                <div class="field">
+                    <label for="memberType">Mitgliederart *</label>
+                    <select id="memberType" name="memberType"></select>
+                    <p class="field-error" data-error-for="memberType"></p>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset data-section="teamMember">
+            <legend>Teammitglied</legend>
+            <div class="grid">
+                <div class="field">
+                    <label for="ahvNumber">AHV-Nummer</label>
+                    <input type="text" id="ahvNumber" name="ahvNumber" placeholder="756.XXXX.XXXX.XX"
+                           maxlength="16">
+                    <p class="hint">Nur für Admin und Geschäftsstelle sichtbar.</p>
+                    <p class="field-error" data-error-for="ahvNumber"></p>
+                </div>
+                <div class="field">
+                    <label for="jsNumber">J+S-Nummer</label>
+                    <input type="text" id="jsNumber" name="jsNumber" maxlength="30">
+                    <p class="field-error" data-error-for="jsNumber"></p>
+                </div>
+                <div class="field field--checkbox" data-section="minor">
+                    <label>
+                        <input type="checkbox" id="photoConsent" name="photoConsent">
+                        Einwilligung Foto
+                    </label>
+                    <p class="hint">Nur bei minderjährigen Teammitgliedern; Standard: Nein.</p>
+                    <p class="field-error" data-error-for="photoConsent"></p>
+                </div>
+            </div>
+
+            <div class="field field--wide" data-section="minor">
+                <label for="guardians">Erziehungsberechtigte</label>
+                <select id="guardians" name="guardians" multiple size="6"></select>
+                <p class="hint">
+                    Mehrfachauswahl möglich. Es stehen alle erfassten natürlichen Personen zur
+                    Verfügung; E-Mails an die Gruppen des Kindes gehen an die Erziehungsberechtigten.
+                </p>
+                <p class="field-error" data-error-for="guardians"></p>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Adresse und Kontakt</legend>
+            <div class="grid">
+                <div class="field">
+                    <label for="email">E-Mail <span data-when="emailRequired">*</span></label>
+                    <input type="email" id="email" name="email" maxlength="190">
+                    <p class="hint" id="email-hint"></p>
+                    <p class="field-error" data-error-for="email"></p>
+                </div>
+                <div class="field">
+                    <label for="phone">Telefon</label>
+                    <input type="text" id="phone" name="phone" placeholder="+41 79 876 54 32">
+                    <p class="field-error" data-error-for="phone"></p>
+                </div>
+                <div class="field">
+                    <label for="street">Strasse</label>
+                    <input type="text" id="street" name="street" maxlength="150">
+                    <p class="field-error" data-error-for="street"></p>
+                </div>
+                <div class="field">
+                    <label for="houseNumber">Hausnummer</label>
+                    <input type="text" id="houseNumber" name="houseNumber" maxlength="20">
+                    <p class="field-error" data-error-for="houseNumber"></p>
+                </div>
+                <div class="field">
+                    <label for="addressAddition">Adresszusatz</label>
+                    <input type="text" id="addressAddition" name="addressAddition" maxlength="100">
+                    <p class="field-error" data-error-for="addressAddition"></p>
+                </div>
+                <div class="field">
+                    <label for="zip">PLZ</label>
+                    <input type="text" id="zip" name="zip" maxlength="10">
+                    <p class="field-error" data-error-for="zip"></p>
+                </div>
+                <div class="field">
+                    <label for="city">Ort</label>
+                    <input type="text" id="city" name="city" maxlength="100">
+                    <p class="field-error" data-error-for="city"></p>
+                </div>
+                <div class="field">
+                    <label for="country">Land</label>
+                    <input type="text" id="country" name="country" maxlength="2" value="CH">
+                    <p class="hint">ISO-Ländercode, Standard CH.</p>
+                    <p class="field-error" data-error-for="country"></p>
+                </div>
+            </div>
+            <p class="hint">
+                Die Postadresse ist optional. Wird sie erfasst, müssen Strasse, PLZ und Ort
+                vollständig sein.
+            </p>
+        </fieldset>
+
+        <fieldset>
+            <legend>Weiteres</legend>
+            <div class="field field--wide">
+                <label for="note">Notiz</label>
+                <textarea id="note" name="note" rows="3"></textarea>
+            </div>
+            <div class="field field--wide" data-section="children" hidden>
+                <label>Kinder</label>
+                <ul class="list" id="children-list"></ul>
+            </div>
+        </fieldset>
+
+        <div class="actions">
+            <button type="submit" class="button button--primary" id="save-button">Speichern</button>
+            <a class="button" href="#/persons">Abbrechen</a>
+            <button type="button" class="button button--danger" id="delete-button" hidden>Löschen</button>
+        </div>
+    </form>
+</section>

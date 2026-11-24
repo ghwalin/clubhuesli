@@ -1,0 +1,25 @@
+<section class="card card--narrow">
+    <h1>Anmelden</h1>
+    <p class="hint">
+        Minimaler Login für die Rollen Admin und Geschäftsstelle. Die Anmeldung
+        mit Microsoft-Konto und Passkey folgt in einem späteren Sprint.
+    </p>
+
+    <form id="login-form" novalidate>
+        <p class="form-error" id="login-error" hidden></p>
+
+        <div class="field">
+            <label for="login-email">E-Mail</label>
+            <input type="email" id="login-email" name="email" autocomplete="username" required>
+        </div>
+
+        <div class="field">
+            <label for="login-password">Passwort</label>
+            <input type="password" id="login-password" name="password" autocomplete="current-password" required>
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="button button--primary">Anmelden</button>
+        </div>
+    </form>
+</section>

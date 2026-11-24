@@ -1,0 +1,44 @@
+<section class="card">
+    <header class="card__header">
+        <h1>Personen</h1>
+        <div class="card__actions">
+            <a class="button button--primary" href="#/persons/new/natural">Natürliche Person</a>
+            <a class="button" href="#/persons/new/legal">Juristische Person</a>
+        </div>
+    </header>
+
+    <form id="person-filter" class="toolbar" novalidate>
+        <div class="field field--inline">
+            <label for="filter-search">Suche</label>
+            <input type="search" id="filter-search" name="search" placeholder="Name, Firma oder E-Mail">
+        </div>
+        <div class="field field--inline">
+            <label for="filter-type">Personenart</label>
+            <select id="filter-type" name="personType">
+                <option value="">Alle</option>
+                <option value="NATURAL">Natürliche Personen</option>
+                <option value="LEGAL">Juristische Personen</option>
+            </select>
+        </div>
+        <button type="submit" class="button">Filtern</button>
+    </form>
+
+    <p class="form-error" id="person-list-error" hidden></p>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Personenart</th>
+                <th>Mitgliederart</th>
+                <th>E-Mail</th>
+                <th>Telefon</th>
+                <th>Ort</th>
+                <th class="table__actions">Aktionen</th>
+            </tr>
+        </thead>
+        <tbody id="person-rows"></tbody>
+    </table>
+
+    <p class="hint" id="person-count"></p>
+</section>
