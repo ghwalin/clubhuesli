@@ -3,6 +3,12 @@
 --        plus a minimal user table for the login stub (roles admin and office).
 -- Inheritance is mapped table-per-type: the common table `person` holds the
 -- attributes of AbstractPerson, the specialised tables share its primary key.
+-- Run this with an administrative connection, after database/bootstrap.sql:
+--
+--   mysql -u root -p clubhuesli < database/schema.sql
+--
+-- The application's database user has only SELECT/INSERT/UPDATE/DELETE, so it
+-- cannot create these tables itself.
 SET NAMES utf8mb4;
 
 -- ---------------------------------------------------------------------------

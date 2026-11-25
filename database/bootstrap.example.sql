@@ -1,7 +1,10 @@
 -- Clubadmin bootstrap, sprint 1 (MySQL 8, utf8mb4)
--- Creates the database and the application user. Needs an administrative
--- connection and must run BEFORE database/schema.sql:
+-- Template that creates the database and the application user. Copy it to
+-- database/bootstrap.sql (git-ignored), set the password of the application
+-- user in that copy and run the copy. Needs an administrative connection and
+-- must run BEFORE database/schema.sql:
 --
+--   cp database/bootstrap.example.sql database/bootstrap.sql
 --   mysql -u root -p < database/bootstrap.sql
 --   mysql -u root -p clubhuesli < database/schema.sql
 --
@@ -18,8 +21,8 @@ CREATE DATABASE clubhuesli
 
 -- ---------------------------------------------------------------------------
 -- Application user: recreate and grant the privileges the app needs.
--- Change the password below and keep it in sync with config/config.php
--- ('db' => 'pass').
+-- Replace 'change-me' below (both statements) with the real password and keep
+-- it in sync with config/config.php ('db' => 'pass'). Do not commit the copy.
 -- ---------------------------------------------------------------------------
 DROP USER IF EXISTS 'clubhuesli'@'localhost';
 DROP USER IF EXISTS 'clubhuesli'@'127.0.0.1';

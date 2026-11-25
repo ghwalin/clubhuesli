@@ -1,5 +1,6 @@
 config/config.local.php
 /config/config.php
+/database/bootstrap.sql
 .idea
 /userstories/_vorher/
 /vendor/

@@ -12,9 +12,12 @@ Admin und Geschäftsstelle.
 * Composer (nur für die Tests; die Applikation selbst läuft auch ohne, siehe `src/autoload.php`)
 
 ## Installation
-1. DB + User anlegen (Passwort in `database/bootstrap.sql` vorher anpassen).
-   Das Skript verwirft eine bestehende Datenbank `clubhuesli` samt Daten:
+1. `database/bootstrap.sql` aus `database/bootstrap.example.sql` kopieren und in der Kopie
+   das Passwort des DB-Benutzers setzen (`IDENTIFIED BY 'change-me'`, zweimal). Die Kopie ist
+   von git ausgeschlossen, das Beispiel enthält keine echten Passwörter. Danach die Kopie
+   ausführen; das Skript verwirft eine bestehende Datenbank `clubhuesli` samt Daten:
    ```
+   cp database/bootstrap.example.sql database/bootstrap.sql
    mysql -u root -p < database/bootstrap.sql
    ```
 2. `config/config.php` aus `config/config.example.php` kopieren und anpassen. Alternativ
@@ -23,12 +26,19 @@ Admin und Geschäftsstelle.
    <?php return ['db' => ['pass' => '...'], 'debug' => true];
    ```
    Beide Dateien sind von git ausgeschlossen.
-3. Schema laden und ersten Admin anlegen:
+3. Schema laden. Das gehört wie Schritt 1 dem Server-Administrator: der DB-Benutzer der
+   Applikation hat keine `CREATE TABLE`-Rechte, `bin/install.php` legt deshalb keine Tabellen
+   an.
+   ```
+   mysql -u root -p clubhuesli < database/schema.sql
+   ```
+   Optional die Demodaten: `mysql -u root -p clubhuesli < database/seed_demo.sql`
+4. Ersten Admin anlegen (braucht `config/config.php` und das geladene Schema):
    ```
    php bin/install.php admin@example.org 'Passwort1234'
    ```
    Eine weitere Rolle: `php bin/install.php office@example.org 'Passwort1234' office`
-4. Webroot auf `public/` setzen (bzw. `http://localhost/clubhuesli/public/`). `config/`, `src/`,
+5. Webroot auf `public/` setzen (bzw. `http://localhost/clubhuesli/public/`). `config/`, `src/`,
    `database/`, `bin/` und `tests/` nicht öffentlich ausliefern. Für Apache liegt eine
    `public/.htaccess` bereit (Rewrite auf `api/index.php` bzw. `index.html`).
 
@@ -39,11 +49,11 @@ php -S localhost:8000 -t public bin/dev_router.php
 
 ## Projektstruktur
 ```
-bin/                 install.php (Schema + erstes Konto), dev_router.php
+bin/                 install.php (erstes Konto), dev_router.php
 config/              Konfiguration (nicht im Repository)
 database/            Datenbank-Skripte (MySQL 8)
-  bootstrap.sql      Datenbank und DB-Benutzer (als root ausführen)
-  schema.sql         Datenbankschema (Tabellen)
+  bootstrap.example.sql      Vorlage für Datenbank und DB-Benutzer (Kopie als root ausführen)
+  schema.sql         Datenbankschema (Tabellen, als root ausführen)
   seed_demo.sql      Demodaten (optional)
 public/              alles, was der Client erreicht
   index.html         Single-Page-Application
