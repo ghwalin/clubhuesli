@@ -10,7 +10,7 @@
 -- The application's database user has only SELECT/INSERT/UPDATE/DELETE, so it
 -- cannot create these tables itself.
 SET NAMES utf8mb4;
-
+USE clubhuesli;
 -- ---------------------------------------------------------------------------
 -- AbstractPerson
 -- ---------------------------------------------------------------------------
