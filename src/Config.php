@@ -47,9 +47,6 @@ final class Config
             self::$values = $values;
         }
 
-        if ($values['debug'] ?? false) {
-            print_r(self::$values);
-        }
         return self::$values;
     }
 

@@ -45,7 +45,8 @@ final class Session
         session_set_cookie_params([
             'httponly' => true,
             'samesite' => 'Lax',
-            'secure'   => ($_SERVER['HTTPS'] ?? '') !== '',
+            // Some servers pass HTTPS=off for plain HTTP, which must not set Secure.
+            'secure'   => !in_array(strtolower((string) ($_SERVER['HTTPS'] ?? '')), ['', 'off'], true),
         ]);
         session_start();
     }
