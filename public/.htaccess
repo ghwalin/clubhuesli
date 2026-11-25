@@ -1,7 +1,6 @@
 # Apache: serve existing files directly, send every /api request to the API
 # front controller and everything else to the single-page application.
 RewriteEngine On
-RewriteBase /
 
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d

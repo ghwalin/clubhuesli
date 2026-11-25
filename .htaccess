@@ -1,0 +1,6 @@
+# Send everything to public/ (webroot is /clubhuesli/, app lives in public/).
+Options -Indexes
+RewriteEngine On
+RewriteRule ^$ public/ [L]
+RewriteCond %{REQUEST_URI} !/public/
+RewriteRule ^(.*)$ public/$1 [L]
