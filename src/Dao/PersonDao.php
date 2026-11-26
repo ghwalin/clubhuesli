@@ -85,9 +85,12 @@ class PersonDao
             $parameters['personType'] = $personType->value;
         }
         if ($search !== null && trim($search) !== '') {
-            $conditions[]        = '(n.first_name LIKE :search OR n.last_name LIKE :search'
-                . ' OR l.name LIKE :search OR p.email LIKE :search)';
-            $parameters['search'] = '%' . trim($search) . '%';
+            // Native prepared statements do not allow a named placeholder twice.
+            $conditions[] = '(n.first_name LIKE :search1 OR n.last_name LIKE :search2'
+                . ' OR l.name LIKE :search3 OR p.email LIKE :search4)';
+            foreach (['search1', 'search2', 'search3', 'search4'] as $placeholder) {
+                $parameters[$placeholder] = '%' . trim($search) . '%';
+            }
         }
         if ($conditions !== []) {
             $sql .= ' WHERE ' . implode(' AND ', $conditions);
@@ -216,7 +219,11 @@ class PersonDao
      */
     public function save(AbstractPerson $person): int
     {
-        $this->connection()->beginTransaction();
+        // Join a transaction of the caller (e.g. the import) instead of starting a nested one.
+        $ownTransaction = !$this->connection()->inTransaction();
+        if ($ownTransaction) {
+            $this->connection()->beginTransaction();
+        }
         try {
             $id = $person->getId();
             if ($id === null) {
@@ -232,9 +239,13 @@ class PersonDao
                 $this->saveLegalPerson($person, $id);
             }
 
-            $this->connection()->commit();
+            if ($ownTransaction) {
+                $this->connection()->commit();
+            }
         } catch (\Throwable $exception) {
-            $this->connection()->rollBack();
+            if ($ownTransaction) {
+                $this->connection()->rollBack();
+            }
             throw $exception;
         }
 

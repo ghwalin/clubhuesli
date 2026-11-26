@@ -53,7 +53,7 @@ php -S localhost:8000 -t public bin/dev_router.php
 
 ## Projektstruktur
 ```
-bin/                 install.php (erstes Konto), dev_router.php
+bin/                 install.php (erstes Konto), import_admidio.php (Datenimport), dev_router.php
 config/              Konfiguration (nicht im Repository)
 database/            Datenbank-Skripte (MySQL 8)
   bootstrap.example.sql      Vorlage für Datenbank und DB-Benutzer (Kopie als root ausführen)
@@ -71,6 +71,7 @@ src/                 Backend (PSR-4: Clubhuesli\)
   Http/              ApiKernel, Router, Request, Response, Session, HttpException
   Model/             AbstractPerson, NaturalPerson, TeamMember, LegalPerson, User,
                      Season, Group, GroupHierarchy, Membership, Enums
+  Import/            SqlDumpReader, AdmidioMapper, AdmidioImporter (Import aus Admidio)
   Service/           MembershipReader (Mitglieder inkl. Untergruppen, Gruppen einer Person)
   Validation/        Validator, ValidationException
 tests/unit/          PHPUnit (Modelle, Validierung, JSON-API)
@@ -128,3 +129,44 @@ ist), `group_hierarchy` (n:n, Zyklenfreiheit prüft die Applikation), `membershi
 Gruppe, Saison, Rolle, Funktion, Shirtnummer, Austrittsdatum). Die Zugehörigkeit zu Obergruppen
 wird aus den Untergruppen abgeleitet und nicht gespeichert. Gruppen werden nie gelöscht, nur
 deaktiviert.
+
+## Import der Mitglieder aus Admidio
+
+`bin/import_admidio.php` liest ein SQL-Backup der alten Admidio-Datenbank direkt ein (keine
+zweite Datenbank nötig) und legt die **aktuellen** Mitglieder in Clubadmin an. Voraussetzung:
+Schema geladen (siehe Installation) und `config/config.php` vorhanden.
+
+```
+# 1. Nur anzeigen, was importiert würde (braucht keine Datenbank)
+php bin/import_admidio.php <dump.sql> --plan-only
+# 2. Probelauf mit der Datenbank: alles in einer Transaktion, am Ende Rollback
+php bin/import_admidio.php <dump.sql> --dry-run
+# 3. Import
+php bin/import_admidio.php <dump.sql>
+```
+
+Optionen: `--date=JJJJ-MM-TT` (Stichtag für «aktuell», Standard heute), `--org=1` (Id der
+Admidio-Organisation). Exit-Code 3 heisst: der Import lief, einzelne Personen mussten aber
+übersprungen werden (siehe Ausgabe). Der Import ist wiederholbar: Saison, Gruppen, Personen
+(Name + Geburtsdatum bzw. E-Mail) und Zuordnungen werden erkannt und nicht doppelt angelegt.
+
+Regeln (`src/Import/AdmidioMapper.php`):
+
+* **Saison:** die Saison, die den Stichtag enthält (1.7.–30.6., z. B. 2026/27); sie wird angelegt.
+* **Mitgliedschaften:** Rollen der Organisation werden zu Gruppen; übernommen werden
+  Mitgliedschaften, deren Ende noch nicht erreicht ist. Ein Enddatum innerhalb der Saison wird
+  zum Austrittsdatum. Systemrollen (Kategorie «COMMON», z. B. Administrator) sind keine Gruppen.
+* **Gruppenart:** Rollen der Kategorie «TEAMS» sind Teams (Leiter = Coach, sonst Spielerin, mit
+  Trikot-Nr.), «Vorstand», «Funktionäre» und «Spielsekretär:innen» Funktionäre, alle anderen
+  «Andere». Die Funktion von Vorstand/Funktionären entsteht aus den angekreuzten Feldern.
+* **Personen:** Mitglieder in einem Team oder in «Aktivmitglied» sind «Aktiv» (Teammitglied,
+  wenn ein Geburtsdatum vorhanden ist), «Ehrenmitglieder» sind Ehrenmitglieder, alle anderen
+  Passiv. Personen einer Sponsorrolle mit Firma oder Sponsorenname werden juristische Personen
+  (Kontaktperson = das Admidio-Profil). Nicht gültige oder archivierte Konten werden übersprungen.
+* **Eltern:** Bei Minderjährigen wird mit «Vorname Nachname» und E-Mail der Eltern ein
+  Erziehungsberechtigter angelegt (Geschwister teilen ihn). Sonst landen die Angaben in der
+  Notiz, und die E-Mail der Eltern dient als Kontaktadresse.
+* **Ungültige Werte:** Optionale Werte, die die Validierung nicht bestehen (z. B. falsche
+  AHV-Nummer), werden verworfen, in der Notiz festgehalten und gemeldet. Personen ohne
+  E-Mail-Adresse (Pflichtfeld) werden nicht importiert, sondern in der Ausgabe aufgelistet.
+* Nicht übernommen werden Passwörter, Konten, Mitteilungen, Termine und das Änderungsprotokoll.

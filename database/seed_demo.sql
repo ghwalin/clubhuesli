@@ -3,6 +3,7 @@
 -- and a sponsor, plus seasons, groups with a small hierarchy and memberships.
 -- The birth dates and seasons are relative to the import date.
 SET NAMES utf8mb4;
+USE clubhuesli;
 
 START TRANSACTION;
 
