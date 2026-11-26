@@ -1,0 +1,43 @@
+<section class="card" id="person-groups-card">
+    <header class="card__header">
+        <h2>Gruppen</h2>
+        <div class="card__actions">
+            <button type="button" class="button button--danger" id="leave-club-button">Austritt aus dem Verein</button>
+        </div>
+    </header>
+    <p class="form-error" id="person-groups-error" hidden></p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Saison</th>
+                <th>Gruppe</th>
+                <th>Rolle</th>
+                <th>Funktion</th>
+                <th>Austritt</th>
+                <th class="table__actions">Aktionen</th>
+            </tr>
+        </thead>
+        <tbody id="person-group-rows"></tbody>
+    </table>
+
+    <h3>Neu zuordnen</h3>
+    <form id="person-assign-form" class="toolbar" novalidate>
+        <div class="field field--inline">
+            <label for="pa-group">Gruppe</label>
+            <select id="pa-group"></select>
+        </div>
+        <div class="field field--inline">
+            <label for="pa-season">Saison</label>
+            <select id="pa-season"></select>
+        </div>
+        <div class="field field--inline" id="pa-role-field" hidden>
+            <label for="pa-role">Rolle</label>
+            <select id="pa-role"></select>
+        </div>
+        <div class="field field--inline">
+            <label for="pa-function">Funktion</label>
+            <input type="text" id="pa-function" maxlength="100">
+        </div>
+        <button type="submit" class="button button--primary">Zuordnen</button>
+    </form>
+</section>

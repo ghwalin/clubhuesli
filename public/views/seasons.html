@@ -1,0 +1,47 @@
+<section class="card">
+    <header class="card__header">
+        <h1>Saisons</h1>
+    </header>
+
+    <p class="form-error" id="season-error" hidden></p>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Bezeichnung</th>
+                <th>Start</th>
+                <th>Ende</th>
+                <th class="table__actions">Aktionen</th>
+            </tr>
+        </thead>
+        <tbody id="season-rows"></tbody>
+    </table>
+</section>
+
+<section class="card">
+    <h2 id="season-form-title">Neue Saison</h2>
+    <form id="season-form" novalidate>
+        <input type="hidden" id="season-id">
+        <div class="grid">
+            <div class="field">
+                <label for="season-name">Bezeichnung <span class="required">*</span></label>
+                <input type="text" id="season-name" name="name" maxlength="20" placeholder="2026/27">
+                <p class="field-error" data-error-for="name"></p>
+            </div>
+            <div class="field">
+                <label for="season-start">Startdatum <span class="required">*</span></label>
+                <input type="date" id="season-start" name="startDate">
+                <p class="field-error" data-error-for="startDate"></p>
+            </div>
+            <div class="field">
+                <label for="season-end">Enddatum <span class="required">*</span></label>
+                <input type="date" id="season-end" name="endDate">
+                <p class="field-error" data-error-for="endDate"></p>
+            </div>
+        </div>
+        <div class="actions">
+            <button type="submit" class="button button--primary">Speichern</button>
+            <button type="button" class="button" id="season-cancel" hidden>Abbrechen</button>
+        </div>
+    </form>
+</section>

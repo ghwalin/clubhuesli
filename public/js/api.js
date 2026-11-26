@@ -211,4 +211,184 @@ export const api = {
         });
         return payload.person;
     },
+
+    /* ----------------------------- seasons ----------------------------- */
+
+    /**
+     * Returns all seasons, the latest first.
+     *
+     * @returns {Promise<Array<object>>} The seasons.
+     */
+    async seasons() {
+        return (await request('seasons')).seasons;
+    },
+
+    /**
+     * Creates a season.
+     *
+     * @param {object} season Name, start date and end date.
+     * @returns {Promise<object>} The created season.
+     */
+    async createSeason(season) {
+        return (await request('seasons', { method: 'POST', body: season })).season;
+    },
+
+    /**
+     * Updates a season.
+     *
+     * @param {number} id Id of the season.
+     * @param {object} season Name, start date and end date.
+     * @returns {Promise<object>} The updated season.
+     */
+    async updateSeason(id, season) {
+        return (await request(`seasons/${id}`, { method: 'PUT', body: season })).season;
+    },
+
+    /**
+     * Deletes a season that is not used.
+     *
+     * @param {number} id Id of the season.
+     * @returns {Promise<void>}
+     */
+    async deleteSeason(id) {
+        await request(`seasons/${id}`, { method: 'DELETE' });
+    },
+
+    /* ------------------------------ groups ----------------------------- */
+
+    /**
+     * Returns the values the group forms offer.
+     *
+     * @returns {Promise<object>} Group types, statuses and roles.
+     */
+    groupMeta() {
+        return request('groups/meta');
+    },
+
+    /**
+     * Returns the groups with their direct parents and children.
+     *
+     * @param {{groupType?: string, status?: string}} filter Optional filter.
+     * @returns {Promise<Array<object>>} The groups.
+     */
+    async groups(filter = {}) {
+        return (await request('groups', { query: filter })).groups;
+    },
+
+    /**
+     * Returns a group with its direct parents and children.
+     *
+     * @param {number|string} id Id of the group.
+     * @returns {Promise<object>} The group.
+     */
+    async group(id) {
+        return (await request(`groups/${id}`)).group;
+    },
+
+    /**
+     * Creates a group.
+     *
+     * @param {object} group Name and group type.
+     * @returns {Promise<object>} The created group.
+     */
+    async createGroup(group) {
+        return (await request('groups', { method: 'POST', body: group })).group;
+    },
+
+    /**
+     * Updates name, group type and status of a group.
+     *
+     * @param {number} id Id of the group.
+     * @param {object} group Name, group type and status.
+     * @returns {Promise<object>} The updated group.
+     */
+    async updateGroup(id, group) {
+        return (await request(`groups/${id}`, { method: 'PUT', body: group })).group;
+    },
+
+    /**
+     * Makes a group a child of another one.
+     *
+     * @param {number} parentId Id of the parent group.
+     * @param {number} childId Id of the child group.
+     * @returns {Promise<object>} The parent group.
+     */
+    async addChildGroup(parentId, childId) {
+        return (await request(`groups/${parentId}/children`, { method: 'POST', body: { childId } })).group;
+    },
+
+    /**
+     * Removes the link between a parent and a child group.
+     *
+     * @param {number} parentId Id of the parent group.
+     * @param {number} childId Id of the child group.
+     * @returns {Promise<object>} The parent group.
+     */
+    async removeChildGroup(parentId, childId) {
+        return (await request(`groups/${parentId}/children/${childId}`, { method: 'DELETE' })).group;
+    },
+
+    /**
+     * Returns the members of a group in a season.
+     *
+     * @param {number|string} id Id of the group.
+     * @param {{seasonId?: string, includeFormer?: string}} query Season and whether to include former members.
+     * @returns {Promise<object>} Group, season, members and previous seasons.
+     */
+    groupMembers(id, query = {}) {
+        return request(`groups/${id}/members`, { query });
+    },
+
+    /* --------------------------- memberships --------------------------- */
+
+    /**
+     * Assigns a person to a group for a season.
+     *
+     * @param {object} membership Group, person, season, role, function, shirt number, exit date.
+     * @returns {Promise<object>} The created membership.
+     */
+    async createMembership(membership) {
+        return (await request('memberships', { method: 'POST', body: membership })).membership;
+    },
+
+    /**
+     * Corrects a membership.
+     *
+     * @param {number} id Id of the membership.
+     * @param {object} membership Changed attributes.
+     * @returns {Promise<object>} The updated membership.
+     */
+    async updateMembership(id, membership) {
+        return (await request(`memberships/${id}`, { method: 'PUT', body: membership })).membership;
+    },
+
+    /**
+     * Deletes a membership (correction of an error only).
+     *
+     * @param {number} id Id of the membership.
+     * @returns {Promise<void>}
+     */
+    async deleteMembership(id) {
+        await request(`memberships/${id}`, { method: 'DELETE' });
+    },
+
+    /**
+     * Returns the groups of a person, direct and derived.
+     *
+     * @param {number|string} personId Id of the person.
+     * @returns {Promise<object>} The memberships and the derived memberships.
+     */
+    personMemberships(personId) {
+        return request(`persons/${personId}/memberships`);
+    },
+
+    /**
+     * Records the exit of a person from the club.
+     *
+     * @param {number|string} personId Id of the person.
+     * @returns {Promise<object>} The memberships after the exit.
+     */
+    leaveClub(personId) {
+        return request(`persons/${personId}/leave-club`, { method: 'POST' });
+    },
 };

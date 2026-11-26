@@ -1,0 +1,128 @@
+<section class="card">
+    <header class="card__header">
+        <h1 id="group-title">Gruppe</h1>
+        <div class="card__actions"><a class="button" href="#/groups">Zur Übersicht</a></div>
+    </header>
+    <p class="form-error" id="group-error" hidden></p>
+
+    <form id="group-form" novalidate>
+        <div class="grid">
+            <div class="field">
+                <label for="group-name">Bezeichnung <span class="required">*</span></label>
+                <input type="text" id="group-name" name="name" maxlength="100">
+                <p class="field-error" data-error-for="name"></p>
+            </div>
+            <div class="field">
+                <label for="group-type">Gruppenart <span class="required">*</span></label>
+                <select id="group-type" name="groupType"></select>
+                <p class="field-error" data-error-for="groupType"></p>
+            </div>
+            <div class="field">
+                <label for="group-status">Status</label>
+                <select id="group-status" name="status"></select>
+                <p class="hint">Deaktivieren geht nur ohne aktive Mitgliedschaften und mit inaktiven Untergruppen.</p>
+                <p class="field-error" data-error-for="status"></p>
+            </div>
+        </div>
+        <div class="actions">
+            <button type="submit" class="button button--primary">Speichern</button>
+        </div>
+    </form>
+</section>
+
+<section class="card">
+    <h2>Hierarchie</h2>
+    <p class="form-error" id="link-error" hidden></p>
+    <div class="grid">
+        <div>
+            <h3>Obergruppen</h3>
+            <ul class="list" id="parent-list"></ul>
+            <div class="field field--inline">
+                <select id="parent-select"></select>
+                <button type="button" class="button" id="parent-add">Obergruppe hinzufügen</button>
+            </div>
+        </div>
+        <div>
+            <h3>Untergruppen</h3>
+            <ul class="list" id="child-list"></ul>
+            <div class="field field--inline">
+                <select id="child-select"></select>
+                <button type="button" class="button" id="child-add">Untergruppe hinzufügen</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="card">
+    <h2>Mitglieder</h2>
+    <form id="member-filter" class="toolbar" novalidate>
+        <div class="field field--inline">
+            <label for="member-season">Saison</label>
+            <select id="member-season"></select>
+        </div>
+        <div class="field field--checkbox">
+            <input type="checkbox" id="member-former">
+            <label for="member-former">Ehemalige anzeigen</label>
+        </div>
+    </form>
+    <p class="form-error" id="member-error" hidden></p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Rolle</th>
+                <th>Funktion</th>
+                <th>Shirt</th>
+                <th>Austritt</th>
+                <th class="table__actions">Aktionen</th>
+            </tr>
+        </thead>
+        <tbody id="member-rows"></tbody>
+    </table>
+    <div id="previous-members"></div>
+</section>
+
+<section class="card" id="assign-card">
+    <h2 id="assign-title">Person zuordnen</h2>
+    <form id="assign-form" novalidate>
+        <input type="hidden" id="assign-membership-id">
+        <div class="grid">
+            <div class="field">
+                <label for="assign-person">Person <span class="required">*</span></label>
+                <select id="assign-person" name="personId"></select>
+                <p class="field-error" data-error-for="personId"></p>
+            </div>
+            <div class="field">
+                <label for="assign-season">Saison <span class="required">*</span></label>
+                <select id="assign-season" name="seasonId"></select>
+                <p class="field-error" data-error-for="seasonId"></p>
+            </div>
+            <div class="field" id="assign-role-field" hidden>
+                <label for="assign-role">Rolle <span class="required">*</span></label>
+                <select id="assign-role" name="role"></select>
+                <p class="field-error" data-error-for="role"></p>
+            </div>
+            <div class="field">
+                <label for="assign-function">Funktion</label>
+                <input type="text" id="assign-function" name="function" maxlength="100">
+                <p class="field-error" data-error-for="function"></p>
+            </div>
+            <div class="field" id="assign-shirt-field" hidden>
+                <label for="assign-shirt">Shirtnummer</label>
+                <input type="number" id="assign-shirt" name="shirtNumber" min="0" max="999">
+                <p class="field-error" data-error-for="shirtNumber"></p>
+            </div>
+            <div class="field">
+                <label for="assign-exit">Ausgetreten am</label>
+                <input type="date" id="assign-exit" name="exitDate">
+                <p class="hint">Innerhalb der Saison; die Zuordnung bleibt erhalten.</p>
+                <p class="field-error" data-error-for="exitDate"></p>
+            </div>
+        </div>
+        <p class="form-error" id="assign-error" hidden></p>
+        <div class="actions">
+            <button type="submit" class="button button--primary" id="assign-save">Zuordnen</button>
+            <button type="button" class="button" id="assign-cancel" hidden>Abbrechen</button>
+        </div>
+    </form>
+</section>

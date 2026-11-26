@@ -14,7 +14,10 @@ use Clubhuesli\Http\Request;
 use Clubhuesli\Http\Response;
 use Clubhuesli\Http\Session;
 use Clubhuesli\Model\Role;
+use Clubhuesli\Tests\Fake\InMemoryGroupDao;
+use Clubhuesli\Tests\Fake\InMemoryMembershipDao;
 use Clubhuesli\Tests\Fake\InMemoryPersonDao;
+use Clubhuesli\Tests\Fake\InMemorySeasonDao;
 use Clubhuesli\Tests\Fake\InMemoryUserDao;
 use DateTimeImmutable;
 use RuntimeException;
@@ -29,6 +32,15 @@ final class FeatureContext implements Context
 {
     /** @var InMemoryPersonDao Data access for persons. */
     private InMemoryPersonDao $personDao;
+
+    /** @var InMemorySeasonDao Data access for seasons. */
+    private InMemorySeasonDao $seasonDao;
+
+    /** @var InMemoryGroupDao Data access for groups. */
+    private InMemoryGroupDao $groupDao;
+
+    /** @var InMemoryMembershipDao Data access for group memberships. */
+    private InMemoryMembershipDao $membershipDao;
 
     /** @var ApiKernel The API under test. */
     private ApiKernel $kernel;
@@ -51,10 +63,13 @@ final class FeatureContext implements Context
     #[Given('/^die Testumgebung ist aufgesetzt$/')]
     public function theTestEnvironmentIsSetUp(): void
     {
-        $this->personDao = new InMemoryPersonDao();
-        $userDao         = new InMemoryUserDao();
-        $this->kernel    = new ApiKernel($this->personDao, $userDao, new Session($userDao));
-        $this->response  = null;
+        $this->personDao     = new InMemoryPersonDao();
+        $this->seasonDao     = new InMemorySeasonDao();
+        $this->groupDao      = new InMemoryGroupDao();
+        $this->membershipDao = new InMemoryMembershipDao();
+        $userDao             = new InMemoryUserDao();
+        $this->kernel        = $this->buildKernel($userDao, new Session($userDao));
+        $this->response      = null;
     }
 
     /**
@@ -73,7 +88,7 @@ final class FeatureContext implements Context
         $session = new Session($userDao);
         $session->login($userDao->getUser());
 
-        $this->kernel = new ApiKernel($this->personDao, $userDao, $session);
+        $this->kernel = $this->buildKernel($userDao, $session);
     }
 
     /**
@@ -83,7 +98,7 @@ final class FeatureContext implements Context
     public function iAmNotLoggedIn(): void
     {
         $userDao      = new InMemoryUserDao();
-        $this->kernel = new ApiKernel($this->personDao, $userDao, new Session($userDao));
+        $this->kernel = $this->buildKernel($userDao, new Session($userDao));
     }
 
     /**
@@ -406,6 +421,322 @@ final class FeatureContext implements Context
         $this->response = $previous;
 
         return $names;
+    }
+
+    /**
+     * Builds the API with the in-memory data access objects of the scenario.
+     *
+     * @param InMemoryUserDao $userDao Data access for accounts.
+     * @param Session         $session Session of the scenario.
+     *
+     * @return ApiKernel The kernel.
+     */
+    private function buildKernel(InMemoryUserDao $userDao, Session $session): ApiKernel
+    {
+        return new ApiKernel(
+            $this->personDao,
+            $userDao,
+            $session,
+            $this->seasonDao,
+            $this->groupDao,
+            $this->membershipDao
+        );
+    }
+
+    /**
+     * Stores a season that the scenario needs.
+     *
+     * @param string $name  Name of the season.
+     * @param string $start Start date.
+     * @param string $end   End date.
+     */
+    #[Given('/^die Saison "([^"]*)" von ([\d-]+) bis ([\d-]+) ist erfasst$/')]
+    public function theSeasonIsStored(string $name, string $start, string $end): void
+    {
+        $this->iCreateTheSeason($name, $start, $end);
+        $this->theRecordIsSaved();
+    }
+
+    /**
+     * Stores a season around today and returns nothing; used as the current season.
+     *
+     * @param string $name Name of the season.
+     */
+    #[Given('/^die aktuelle Saison "([^"]*)" ist erfasst$/')]
+    public function theCurrentSeasonIsStored(string $name): void
+    {
+        $this->theSeasonIsStored(
+            $name,
+            (new DateTimeImmutable('-100 days'))->format('Y-m-d'),
+            (new DateTimeImmutable('+200 days'))->format('Y-m-d')
+        );
+    }
+
+    /**
+     * Creates a season through the API.
+     *
+     * @param string $name  Name of the season.
+     * @param string $start Start date.
+     * @param string $end   End date.
+     */
+    #[When('/^ich die Saison "([^"]*)" von ([\d-]+) bis ([\d-]+) erfasse$/')]
+    public function iCreateTheSeason(string $name, string $start, string $end): void
+    {
+        $this->response = $this->kernel->handle(Request::create(
+            'POST',
+            '/seasons',
+            ['name' => $name, 'startDate' => $start, 'endDate' => $end]
+        ));
+    }
+
+    /**
+     * Stores a group that the scenario needs.
+     *
+     * @param string $name Name of the group.
+     * @param string $type Group type.
+     */
+    #[Given('/^die Gruppe "([^"]*)" der Art (TEAM|FUNCTIONARY|OTHER) ist erfasst$/')]
+    public function theGroupIsStored(string $name, string $type): void
+    {
+        $this->response = $this->kernel->handle(Request::create('POST', '/groups', ['name' => $name, 'groupType' => $type]));
+        $this->theRecordIsSaved();
+    }
+
+    /**
+     * Links two groups that the scenario needs.
+     *
+     * @param string $child  Name of the child group.
+     * @param string $parent Name of the parent group.
+     */
+    #[Given('/^die Gruppe "([^"]*)" ist Untergruppe von "([^"]*)"$/')]
+    public function theGroupIsChildOf(string $child, string $parent): void
+    {
+        $this->iLinkTheParent($parent, $child);
+        $this->theRecordIsSaved();
+    }
+
+    /**
+     * Makes a group the parent of another one.
+     *
+     * @param string $parent Name of the parent group.
+     * @param string $child  Name of the child group.
+     */
+    #[When('/^ich die Gruppe "([^"]*)" als Obergruppe von "([^"]*)" zuordne$/')]
+    public function iLinkTheParent(string $parent, string $child): void
+    {
+        $this->response = $this->kernel->handle(Request::create(
+            'POST',
+            '/groups/' . $this->groupId($parent) . '/children',
+            ['childId' => $this->groupId($child)]
+        ));
+    }
+
+    /**
+     * Sets a group inactive.
+     *
+     * @param string $name Name of the group.
+     */
+    #[When('/^ich die Gruppe "([^"]*)" auf inaktiv setze$/')]
+    public function iDeactivateTheGroup(string $name): void
+    {
+        $group          = $this->groupDao->findByName($name);
+        $this->response = $this->kernel->handle(Request::create('PUT', '/groups/' . $this->groupId($name), [
+            'name' => $name, 'groupType' => $group?->getGroupType()?->value, 'status' => 'INACTIVE',
+        ]));
+    }
+
+    /**
+     * Tries to delete a group.
+     *
+     * @param string $name Name of the group.
+     */
+    #[When('/^ich die Gruppe "([^"]*)" löschen will$/')]
+    public function iTryToDeleteTheGroup(string $name): void
+    {
+        $this->response = $this->kernel->handle(Request::create('DELETE', '/groups/' . $this->groupId($name)));
+    }
+
+    /**
+     * Stores a membership that the scenario needs.
+     *
+     * @param string $person Display name of the person.
+     * @param string $group  Name of the group.
+     * @param string $season Name of the season.
+     * @param string $role   Optional role (PLAYER or COACH), empty outside of teams.
+     */
+    #[Given('/^"([^"]*)" ist in der Saison "([^"]*)" der Gruppe "([^"]*)" zugeordnet(?: als (PLAYER|COACH))?$/')]
+    public function thePersonIsAssigned(string $person, string $season, string $group, string $role = ''): void
+    {
+        $this->iAssignThePerson($person, $group, $season, $role);
+        $this->theRecordIsSaved();
+    }
+
+    /**
+     * Assigns a person to a group for a season.
+     *
+     * @param string $person Display name of the person.
+     * @param string $group  Name of the group.
+     * @param string $season Name of the season.
+     * @param string $role   Optional role (PLAYER or COACH).
+     */
+    #[When('/^ich "([^"]*)" der Gruppe "([^"]*)" für die Saison "([^"]*)" zuordne(?: als (PLAYER|COACH))?$/')]
+    public function iAssignThePerson(string $person, string $group, string $season, string $role = ''): void
+    {
+        $this->response = $this->kernel->handle(Request::create('POST', '/memberships', [
+            'groupId'  => $this->groupId($group),
+            'personId' => $this->idOf($person),
+            'seasonId' => $this->seasonId($season),
+            'role'     => $role === '' ? null : $role,
+        ]));
+    }
+
+    /**
+     * Records an exit date at a membership.
+     *
+     * @param string $person Display name of the person.
+     * @param string $group  Name of the group.
+     * @param string $season Name of the season.
+     * @param string $date   Exit date.
+     */
+    #[When('/^ich bei "([^"]*)" in der Gruppe "([^"]*)" und der Saison "([^"]*)" das Austrittsdatum ([\d-]+) erfasse$/')]
+    public function iRecordTheExit(string $person, string $group, string $season, string $date): void
+    {
+        $this->response = $this->kernel->handle(Request::create(
+            'PUT',
+            '/memberships/' . $this->membershipId($person, $group, $season),
+            ['exitDate' => $date]
+        ));
+    }
+
+    /**
+     * Deletes a membership.
+     *
+     * @param string $person Display name of the person.
+     * @param string $group  Name of the group.
+     * @param string $season Name of the season.
+     */
+    #[When('/^ich die Zuordnung von "([^"]*)" zur Gruppe "([^"]*)" in der Saison "([^"]*)" lösche und die Warnung bestätige$/')]
+    public function iDeleteTheMembership(string $person, string $group, string $season): void
+    {
+        $this->response = $this->kernel->handle(
+            Request::create('DELETE', '/memberships/' . $this->membershipId($person, $group, $season))
+        );
+    }
+
+    /**
+     * Checks that the last request succeeded (any 2xx status).
+     */
+    #[Then('/^wird gespeichert$/')]
+    public function theRecordIsSaved(): void
+    {
+        $status = $this->response()->getStatus();
+        if ($status < 200 || $status >= 300) {
+            throw new RuntimeException(sprintf(
+                'Erwartet war ein Erfolg, erhalten: %d – %s',
+                $status,
+                (string) ($this->responseData()['error'] ?? '')
+            ));
+        }
+    }
+
+    /**
+     * Checks whether a person belongs to a group in a season (including child groups).
+     *
+     * @param string $person Display name of the person.
+     * @param string $group  Name of the group.
+     * @param string $season Name of the season.
+     * @param string $not    «nicht» when the person must not belong to the group.
+     */
+    #[Then('/^ist "([^"]*)" in der Saison "([^"]*)" (nicht )?Mitglied der Gruppe "([^"]*)"$/')]
+    public function thePersonIsMember(string $person, string $season, string $not, string $group): void
+    {
+        $response = $this->kernel->handle(Request::create(
+            'GET',
+            '/groups/' . $this->groupId($group) . '/members',
+            [],
+            ['seasonId' => (string) $this->seasonId($season)]
+        ));
+        $names    = array_column($response->getData()['members'] ?? [], 'displayName');
+        $isMember = in_array($person, $names, true);
+        if ($isMember === ($not !== '')) {
+            throw new RuntimeException(sprintf(
+                '«%s» %s in der Saison «%s» Mitglied der Gruppe «%s»',
+                $person,
+                $not === '' ? 'ist nicht' : 'ist',
+                $season,
+                $group
+            ));
+        }
+    }
+
+    /**
+     * Checks the status of a group.
+     *
+     * @param string $name   Name of the group.
+     * @param string $status «aktiv» or «inaktiv».
+     */
+    #[Then('/^ist die Gruppe "([^"]*)" (aktiv|inaktiv)$/')]
+    public function theGroupHasStatus(string $name, string $status): void
+    {
+        $actual = $this->groupDao->findByName($name)?->isActive() ? 'aktiv' : 'inaktiv';
+        if ($actual !== $status) {
+            throw new RuntimeException("Die Gruppe «{$name}» ist {$actual}, erwartet {$status}");
+        }
+    }
+
+    /**
+     * Returns the id of a stored group.
+     *
+     * @param string $name Name of the group.
+     *
+     * @return int The id.
+     */
+    private function groupId(string $name): int
+    {
+        $group = $this->groupDao->findByName($name);
+        if ($group === null) {
+            throw new RuntimeException("Gruppe «{$name}» ist nicht erfasst");
+        }
+
+        return (int) $group->getId();
+    }
+
+    /**
+     * Returns the id of a stored season.
+     *
+     * @param string $name Name of the season.
+     *
+     * @return int The id.
+     */
+    private function seasonId(string $name): int
+    {
+        $season = $this->seasonDao->findByName($name);
+        if ($season === null) {
+            throw new RuntimeException("Saison «{$name}» ist nicht erfasst");
+        }
+
+        return (int) $season->getId();
+    }
+
+    /**
+     * Returns the id of a stored membership.
+     *
+     * @param string $person Display name of the person.
+     * @param string $group  Name of the group.
+     * @param string $season Name of the season.
+     *
+     * @return int The id.
+     */
+    private function membershipId(string $person, string $group, string $season): int
+    {
+        $memberships = $this->membershipDao->findByGroups([$this->groupId($group)], $this->seasonId($season));
+        foreach ($memberships as $membership) {
+            if ($membership->getPersonId() === $this->idOf($person)) {
+                return (int) $membership->getId();
+            }
+        }
+
+        throw new RuntimeException("Zuordnung von «{$person}» zur Gruppe «{$group}» ist nicht erfasst");
     }
 
     /**

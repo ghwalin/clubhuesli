@@ -1,6 +1,7 @@
 -- Demo data for sprint 1 (optional): mysql -u clubhuesli -p clubhuesli < database/seed_demo.sql
 -- Creates a minor player with her guardian, an adult coach, a passive member
--- and a sponsor. The birth dates are relative to the import date.
+-- and a sponsor, plus seasons, groups with a small hierarchy and memberships.
+-- The birth dates and seasons are relative to the import date.
 SET NAMES utf8mb4;
 
 START TRANSACTION;
@@ -44,5 +45,45 @@ VALUES ('LEGAL', 'SPONSOR', 'info@jensen.example', '+41 44 123 45 67', 'Industri
 SET @sponsor = LAST_INSERT_ID();
 INSERT INTO legal_person (person_id, name, contact_first_name, contact_last_name, support)
 VALUES (@sponsor, 'Jensen AG', 'Beat', 'Keller', 'Trikotsponsoring 2026–2028');
+
+-- Seasons: the one containing today (1 July - 30 June) and the following one
+SET @season_start = MAKEDATE(YEAR(CURDATE()) - IF(MONTH(CURDATE()) < 7, 1, 0), 1) + INTERVAL 6 MONTH;
+INSERT INTO season (name, start_date, end_date)
+VALUES (CONCAT(YEAR(@season_start), '/', RIGHT(YEAR(@season_start) + 1, 2)),
+        @season_start, @season_start + INTERVAL 1 YEAR - INTERVAL 1 DAY);
+SET @season = LAST_INSERT_ID();
+INSERT INTO season (name, start_date, end_date)
+VALUES (CONCAT(YEAR(@season_start) + 1, '/', RIGHT(YEAR(@season_start) + 2, 2)),
+        @season_start + INTERVAL 1 YEAR, @season_start + INTERVAL 2 YEAR - INTERVAL 1 DAY);
+
+-- Groups: two teams below "Juniorinnen", officials with two sub-groups, sponsors, passive members
+INSERT INTO club_group (name, group_type) VALUES ('Juniorinnen', 'OTHER');
+SET @juniors = LAST_INSERT_ID();
+INSERT INTO club_group (name, group_type) VALUES ('U18', 'TEAM');
+SET @u18 = LAST_INSERT_ID();
+INSERT INTO club_group (name, group_type) VALUES ('U12', 'TEAM');
+SET @u12 = LAST_INSERT_ID();
+INSERT INTO club_group (name, group_type) VALUES ('Funktionärin', 'FUNCTIONARY');
+SET @officials = LAST_INSERT_ID();
+INSERT INTO club_group (name, group_type) VALUES ('Geschäftsführerin', 'FUNCTIONARY');
+SET @manager = LAST_INSERT_ID();
+INSERT INTO club_group (name, group_type) VALUES ('Webmaster', 'FUNCTIONARY');
+SET @webmaster = LAST_INSERT_ID();
+INSERT INTO club_group (name, group_type) VALUES ('Sponsoren', 'OTHER');
+SET @sponsors = LAST_INSERT_ID();
+INSERT INTO club_group (name, group_type) VALUES ('Passivmitglieder', 'OTHER');
+SET @passives = LAST_INSERT_ID();
+INSERT INTO group_hierarchy (parent_id, child_id)
+VALUES (@juniors, @u18), (@juniors, @u12), (@officials, @manager), (@officials, @webmaster);
+
+-- Memberships in the current season
+INSERT INTO membership (group_id, person_id, season_id, role, `function`, shirt_number)
+VALUES (@u18, @player, @season, 'PLAYER', 'Torhüterin', 1),
+       (@u18, @coach, @season, 'PLAYER', NULL, 10),
+       (@u12, @coach, @season, 'COACH', 'Headcoach', NULL);
+INSERT INTO membership (group_id, person_id, season_id, role, `function`)
+VALUES (@manager, @passive, @season, 'MEMBER', NULL),
+       (@passives, @passive, @season, 'MEMBER', NULL),
+       (@sponsors, @sponsor, @season, 'MEMBER', 'Trikotsponsor');
 
 COMMIT;

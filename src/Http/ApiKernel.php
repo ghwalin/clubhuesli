@@ -6,9 +6,16 @@ namespace Clubhuesli\Http;
 
 use Clubhuesli\Config;
 use Clubhuesli\Controller\AuthController;
+use Clubhuesli\Controller\GroupController;
+use Clubhuesli\Controller\MembershipController;
 use Clubhuesli\Controller\PersonController;
+use Clubhuesli\Controller\SeasonController;
+use Clubhuesli\Dao\GroupDao;
+use Clubhuesli\Dao\MembershipDao;
 use Clubhuesli\Dao\PersonDao;
+use Clubhuesli\Dao\SeasonDao;
 use Clubhuesli\Dao\UserDao;
+use Clubhuesli\Service\MembershipReader;
 use Clubhuesli\Validation\ValidationException;
 use PDOException;
 use Throwable;
@@ -31,15 +38,31 @@ final class ApiKernel
      * @param PersonDao|null $personDao Data access for persons.
      * @param UserDao|null   $userDao   Data access for accounts.
      * @param Session|null   $session   Session of the current request.
+     * @param SeasonDao|null $seasonDao Data access for seasons.
+     * @param GroupDao|null  $groupDao  Data access for groups.
+     * @param MembershipDao|null $membershipDao Data access for group memberships.
      */
-    public function __construct(?PersonDao $personDao = null, ?UserDao $userDao = null, ?Session $session = null)
-    {
-        $personDao = $personDao ?? new PersonDao();
-        $userDao   = $userDao ?? new UserDao();
-        $session   = $session ?? new Session($userDao);
+    public function __construct(
+        ?PersonDao $personDao = null,
+        ?UserDao $userDao = null,
+        ?Session $session = null,
+        ?SeasonDao $seasonDao = null,
+        ?GroupDao $groupDao = null,
+        ?MembershipDao $membershipDao = null,
+    ) {
+        $personDao     = $personDao ?? new PersonDao();
+        $userDao       = $userDao ?? new UserDao();
+        $session       = $session ?? new Session($userDao);
+        $seasonDao     = $seasonDao ?? new SeasonDao();
+        $groupDao      = $groupDao ?? new GroupDao();
+        $membershipDao = $membershipDao ?? new MembershipDao();
+        $reader        = new MembershipReader($groupDao, $seasonDao, $membershipDao, $personDao);
 
-        $auth    = new AuthController($userDao, $session);
-        $persons = new PersonController($personDao, $session);
+        $auth        = new AuthController($userDao, $session);
+        $persons     = new PersonController($personDao, $session);
+        $seasons     = new SeasonController($seasonDao, $membershipDao, $session);
+        $groups      = new GroupController($groupDao, $seasonDao, $membershipDao, $reader, $session);
+        $memberships = new MembershipController($groupDao, $seasonDao, $membershipDao, $personDao, $reader, $session);
 
         $this->router = new Router();
 
@@ -63,6 +86,39 @@ final class ApiKernel
             '/persons/{id}/guardians',
             static fn (Request $r, array $p): Response => $persons->updateGuardians($r, $p)
         );
+        $this->router->add(
+            'GET',
+            '/persons/{id}/memberships',
+            static fn (Request $r, array $p): Response => $memberships->ofPerson($r, $p)
+        );
+        $this->router->add(
+            'POST',
+            '/persons/{id}/leave-club',
+            static fn (Request $r, array $p): Response => $memberships->leaveClub($r, $p)
+        );
+
+        $this->router->add('GET', '/seasons', static fn (): Response => $seasons->index());
+        $this->router->add('POST', '/seasons', static fn (Request $r): Response => $seasons->store($r));
+        $this->router->add('PUT', '/seasons/{id}', static fn (Request $r, array $p): Response => $seasons->update($r, $p));
+        $this->router->add('DELETE', '/seasons/{id}', static fn (Request $r, array $p): Response => $seasons->destroy($r, $p));
+
+        $this->router->add('GET', '/groups/meta', static fn (): Response => $groups->meta());
+        $this->router->add('GET', '/groups', static fn (Request $r): Response => $groups->index($r));
+        $this->router->add('POST', '/groups', static fn (Request $r): Response => $groups->store($r));
+        $this->router->add('GET', '/groups/{id}', static fn (Request $r, array $p): Response => $groups->show($r, $p));
+        $this->router->add('PUT', '/groups/{id}', static fn (Request $r, array $p): Response => $groups->update($r, $p));
+        $this->router->add('GET', '/groups/{id}/members', static fn (Request $r, array $p): Response => $groups->members($r, $p));
+        $this->router->add('POST', '/groups/{id}/children', static fn (Request $r, array $p): Response => $groups->addChild($r, $p));
+        $this->router->add('POST', '/groups/{id}/parents', static fn (Request $r, array $p): Response => $groups->addParent($r, $p));
+        $this->router->add(
+            'DELETE',
+            '/groups/{id}/children/{childId}',
+            static fn (Request $r, array $p): Response => $groups->removeChild($r, $p)
+        );
+
+        $this->router->add('POST', '/memberships', static fn (Request $r): Response => $memberships->store($r));
+        $this->router->add('PUT', '/memberships/{id}', static fn (Request $r, array $p): Response => $memberships->update($r, $p));
+        $this->router->add('DELETE', '/memberships/{id}', static fn (Request $r, array $p): Response => $memberships->destroy($r, $p));
     }
 
     /**

@@ -1,9 +1,16 @@
 /**
- * Single-page application of Clubadmin, sprint 1: login, person list and the
- * form for natural persons, team members and legal persons.
+ * Single-page application of Clubadmin, sprint 1: login, person list, the
+ * form for natural persons, team members and legal persons, seasons, groups
+ * with their hierarchy and the assignment of persons to groups.
  */
 
 import { api, ApiError } from './api.js';
+import {
+    renderGroupDetail,
+    renderGroupList,
+    renderPersonGroups,
+    renderSeasons,
+} from './groups.js';
 
 /** Age at which a person is of full age; overwritten by the metadata. */
 let ageOfMajority = 18;
@@ -19,6 +26,16 @@ const state = {
 const viewCache = new Map();
 
 const appElement = document.getElementById('app');
+
+/** Helpers handed to the views of `groups.js`. */
+const viewContext = {
+    showView: (name) => showView(name),
+    setMessage: (id, message) => setMessage(id, message),
+    escapeHtml: (value) => escapeHtml(value),
+    formatDate: (isoDate) => formatDate(isoDate),
+    showToast: (message) => showToast(message),
+    navigate: (hash) => navigate(hash),
+};
 
 /**
  * Loads a view template from `views/` and caches it.
@@ -350,6 +367,10 @@ async function renderPersonForm(target) {
 
     setUpDeleteButton(person);
 
+    if (person) {
+        await renderPersonGroups(viewContext, person);
+    }
+
     /**
      * Collects the form, sends it to the API and shows the errors of the
      * backend, which validates in the setters of the models.
@@ -651,6 +672,18 @@ async function route() {
 
     const segments = window.location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
 
+    if (segments[0] === 'seasons') {
+        await renderSeasons(viewContext);
+        return;
+    }
+    if (segments[0] === 'groups') {
+        if (segments[1]) {
+            await renderGroupDetail(viewContext, Number(segments[1]));
+        } else {
+            await renderGroupList(viewContext);
+        }
+        return;
+    }
     if (segments[0] !== 'persons') {
         navigate('#/persons');
         return;

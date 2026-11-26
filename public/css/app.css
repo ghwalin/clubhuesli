@@ -387,3 +387,15 @@ textarea:focus {
         text-align: left;
     }
 }
+
+/* Group hierarchy */
+.tree,
+.tree ul {
+    list-style: none;
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
+.tree li {
+    margin: 0.25rem 0;
+}

@@ -131,11 +131,10 @@ final class PersonController
     }
 
     /**
-     * Deletes a person together with its guardianships and its address:
-     * `DELETE /api/persons/{id}`.
+     * Deletes a person together with its guardianships, its address and its
+     * group memberships (`ON DELETE CASCADE`): `DELETE /api/persons/{id}`.
      *
-     * Group memberships, attendances and helper duties follow with the stories
-     * that introduce them.
+     * Attendances and helper duties follow with the stories that introduce them.
      *
      * @param Request              $request    The request.
      * @param array<string, string> $parameters Route parameters with the key `id`.

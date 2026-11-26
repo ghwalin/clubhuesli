@@ -3,7 +3,8 @@
 PHP 8 (PDO) JSON-API + Vanilla-JS-Frontend + MySQL 8. Anforderungen: `specifications/Clubadmin.md`.
 
 Umfang von Sprint 1 (siehe `specifications/sprints/sprint1.md`): natürliche Personen und
-Teammitglieder, Adressen, juristische Personen sowie ein minimaler Login für die Rollen
+Teammitglieder, Adressen, juristische Personen, Saisons, Gruppen mit Ober-/Untergruppen,
+Gruppenzuordnungen pro Saison (inkl. Austritt) sowie ein minimaler Login für die Rollen
 Admin und Geschäftsstelle.
 
 ## Voraussetzungen
@@ -32,6 +33,9 @@ Admin und Geschäftsstelle.
    ```
    mysql -u root -p clubhuesli < database/schema.sql
    ```
+   Das Skript ist wiederholbar (`CREATE TABLE IF NOT EXISTS`): eine bestehende Datenbank von
+   früher bekommt so die neuen Tabellen `season`, `club_group`, `group_hierarchy` und
+   `membership`.
    Optional die Demodaten: `mysql -u root -p clubhuesli < database/seed_demo.sql`
 4. Ersten Admin anlegen (braucht `config/config.php` und das geladene Schema):
    ```
@@ -58,13 +62,16 @@ database/            Datenbank-Skripte (MySQL 8)
 public/              alles, was der Client erreicht
   index.html         Single-Page-Application
   api/index.php      Front-Controller der JSON-API
-  css/, js/, views/  Stylesheet, ES-Module, HTML-Teilansichten
+  css/, js/, views/  Stylesheet, ES-Module (api.js, app.js, groups.js), HTML-Teilansichten
 src/                 Backend (PSR-4: Clubhuesli\)
   Config.php         Konfiguration
-  Controller/        PersonController, AuthController
-  Dao/               Database, PersonDao, UserDao
+  Controller/        PersonController, SeasonController, GroupController,
+                     MembershipController, AuthController
+  Dao/               Database, PersonDao, UserDao, SeasonDao, GroupDao, MembershipDao
   Http/              ApiKernel, Router, Request, Response, Session, HttpException
-  Model/             AbstractPerson, NaturalPerson, TeamMember, LegalPerson, User, Enums
+  Model/             AbstractPerson, NaturalPerson, TeamMember, LegalPerson, User,
+                     Season, Group, GroupHierarchy, Membership, Enums
+  Service/           MembershipReader (Mitglieder inkl. Untergruppen, Gruppen einer Person)
   Validation/        Validator, ValidationException
 tests/unit/          PHPUnit (Modelle, Validierung, JSON-API)
 tests/behat/         Behat: Akzeptanzkriterien der User Stories
@@ -115,3 +122,9 @@ Benutzer werden über eine Person verknüpft; Team-/Kinder-Bezug ergibt sich aus
 In Sprint 1 sind nur admin und office implementiert (`src/Model/Role.php`). Der Login ist ein
 Stub mit E-Mail/Passwort und PHP-Session; OAuth 2.0 (Microsoft Identity Platform), Passkey
 und JWT folgen in einem späteren Sprint.
+
+Gruppen und Zuordnungen: `club_group` (die Tabelle heisst so, weil `group` in SQL reserviert
+ist), `group_hierarchy` (n:n, Zyklenfreiheit prüft die Applikation), `membership` (Person,
+Gruppe, Saison, Rolle, Funktion, Shirtnummer, Austrittsdatum). Die Zugehörigkeit zu Obergruppen
+wird aus den Untergruppen abgeleitet und nicht gespeichert. Gruppen werden nie gelöscht, nur
+deaktiviert.
