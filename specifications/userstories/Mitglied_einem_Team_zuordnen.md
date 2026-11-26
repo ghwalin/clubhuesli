@@ -37,6 +37,10 @@ assignees: []
     - **Gegeben** Peter Muster hat die Mitgliederart «Passiv» oder «Elternteil» bzw. ist kein Teammitglied
     - **Wenn** ich ihn einem Team zuordnen will
     - **Dann** wird er in der Auswahl nicht angeboten bzw. die Zuordnung wird mit der Meldung «Nur aktive Teammitglieder können einem Team zugeordnet werden» abgelehnt
+- [ ] **Szenario 4b:** Juristische Person
+    - **Gegeben** «Muster AG» ist eine juristische Person
+    - **Wenn** ich sie einem Team zuordnen will
+    - **Dann** wird sie nicht angeboten bzw. abgelehnt mit der Meldung «Nur natürliche Personen können Mitglied eines Teams sein»
 - [ ] **Szenario 5:** Keine doppelte Zuordnung
     - **Gegeben** Anna Muster ist in der Saison 2026/27 Spielerin im Team «U18»
     - **Wenn** ich sie nochmals als Spielerin dem Team «U18» für die Saison 2026/27 zuordne

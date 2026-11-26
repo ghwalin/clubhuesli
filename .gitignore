@@ -6,3 +6,4 @@ config/config.local.php
 /vendor/
 .phpunit.cache/
 .phpunit.result.cache
+/config/nginx.example.conf

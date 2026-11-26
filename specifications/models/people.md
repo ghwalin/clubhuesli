@@ -27,6 +27,7 @@ Implementiert allgemeine Person
 
 ## Teammitglieder (bisher: Aktive Spielerin / Coach)
 Erbt von natürliche Person
+Nur Teammitglieder mit Mitgliederart «Aktiv» können Mitglied eines Teams (Gruppenart Team) sein; juristische Personen nie. In anderen Gruppenarten sind alle Personen und Mitgliederarten erlaubt (siehe `groups.md`).
 - AHV-Nummer
 - J+S-Nummer
 - Beziehung zu Erziehungsberechtigten (optional, nur minderjährige)

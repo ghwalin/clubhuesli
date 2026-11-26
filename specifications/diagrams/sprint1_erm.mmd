@@ -4,6 +4,11 @@ erDiagram
     NATURAL_PERSON ||--o| TEAM_MEMBER : "ist"
     TEAM_MEMBER ||--o{ GUARDIANSHIP : "Kind"
     NATURAL_PERSON ||--o{ GUARDIANSHIP : "Erziehungsberechtigte"
+    PERSON ||--o{ MEMBERSHIP : "ist zugeordnet"
+    CLUB_GROUP ||--o{ MEMBERSHIP : "hat Mitglieder"
+    SEASON ||--o{ MEMBERSHIP : "gilt für"
+    CLUB_GROUP ||--o{ GROUP_HIERARCHY : "Obergruppe"
+    CLUB_GROUP ||--o{ GROUP_HIERARCHY : "Untergruppe"
 
     PERSON {
         int id PK
@@ -41,4 +46,30 @@ erDiagram
     GUARDIANSHIP {
         int child_id PK, FK
         int guardian_id PK, FK
+    }
+    SEASON {
+        int id PK
+        string name "eindeutig, z.B. 2026/27"
+        date start_date
+        date end_date
+    }
+    CLUB_GROUP {
+        int id PK
+        string name "eindeutig"
+        string group_type "TEAM | FUNCTIONARY | OTHER"
+        string status "ACTIVE | INACTIVE"
+    }
+    GROUP_HIERARCHY {
+        int parent_id PK, FK
+        int child_id PK, FK
+    }
+    MEMBERSHIP {
+        int id PK
+        int group_id FK
+        int person_id FK
+        int season_id FK
+        string role "PLAYER | COACH | MEMBER"
+        string function "Freitext, optional"
+        int shirt_number "optional, nur PLAYER"
+        date exit_date "optional, innerhalb der Saison"
     }

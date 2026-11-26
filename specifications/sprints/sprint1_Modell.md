@@ -1,7 +1,6 @@
 # Sprint 1: Klassendiagramm und ERM
 
-Grundlage: `models/people.md`, User Stories «Natürliche Personen verwalten», «Adressen verwalten» sowie «Juristische Personen verwalten».
-Gruppen, Saisons und Mitgliedschaften sind **nicht** Teil von Sprint 1 (siehe `models/groups.md`).
+Grundlage: `models/people.md`, `models/groups.md`, `models/season.md`, User Stories zu Personen, Adressen, Saisons, Gruppen und Gruppenzuordnungen.
 
 ## Diagramme
 
@@ -21,6 +20,10 @@ Alle Attribute sind `private` (Zugriff über Getter/Setter, Validierung im Sette
 * Adresse nur vollständig (Strasse, PLZ, Ort); bei Land CH PLZ = 4 Ziffern
 * E-Mail gültig, nicht eindeutig; Pflicht bei natürlichen Personen, ausser minderjährigen Teammitgliedern mit Erziehungsberechtigtem
 * Erziehungsberechtigte nur bei minderjährigen Teammitgliedern, nicht mit sich selbst
+* Saison: Bezeichnung eindeutig, Enddatum ≥ Startdatum, keine Überschneidung mit anderen Saisons
+* Gruppe: Bezeichnung eindeutig; Hierarchie zyklenfrei, keine Selbstzuordnung; Deaktivieren nur ohne aktive Mitgliedschaften und mit ausschliesslich inaktiven Untergruppen; kein Löschen
+* Mitgliedschaft: nur aktive Gruppen; pro Person/Gruppe/Saison (bei Teams zusätzlich Rolle) höchstens eine; Team nur mit natürlichen Personen der Mitgliederart «Aktiv» (Rolle `PLAYER`/`COACH`), sonst Rolle `MEMBER`; Shirtnummer nur bei `PLAYER`; Austrittsdatum innerhalb der Saison
+* Zugehörigkeit zu Obergruppen wird abgeleitet (transitiv) und nicht gespeichert
 
 ## Hinweise zum ERM
 
@@ -28,4 +31,9 @@ Vererbung als *Table-per-Type*: gemeinsame Tabelle `person`, die spezialisierten
 
 Constraints:
 * `GUARDIANSHIP.child_id <> guardian_id`
-* `ON DELETE CASCADE` auf allen `person_id`- und `GUARDIANSHIP`-Fremdschlüsseln (Szenario «Person löschen»)
+* `ON DELETE CASCADE` auf allen `person_id`- und `GUARDIANSHIP`-Fremdschlüsseln, auch bei `MEMBERSHIP.person_id` (Szenario «Person löschen»)
+* `SEASON.name` und `CLUB_GROUP.name` eindeutig
+* `GROUP_HIERARCHY.parent_id <> child_id`; Zyklenfreiheit wird in der Anwendung geprüft
+* `MEMBERSHIP`: eindeutig über (`group_id`, `person_id`, `season_id`, `role`); `role` ist bei Nicht-Team-Gruppen `MEMBER` (kein NULL, damit die Eindeutigkeit greift)
+* `MEMBERSHIP.season_id` und `group_id` mit `ON DELETE RESTRICT` (Saison löschen nur ohne Mitgliedschaften; Gruppen werden nicht gelöscht)
+* Tabelle heisst `club_group`, da `group` in SQL reserviert ist

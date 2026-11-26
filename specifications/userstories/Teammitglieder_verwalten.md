@@ -20,7 +20,7 @@ assignees: []
 
 ## 📏 Grundregeln (gelten für alle Sub-Stories)
 
-1. Nur **Teammitglieder** (`specifications/models/people.md`) mit Mitgliederart **«Aktiv»** können einem Team zugeordnet werden.
+1. Nur **natürliche Personen** können Mitglied eines Teams sein, und zwar nur **Teammitglieder** (`specifications/models/people.md`) mit Mitgliederart **«Aktiv»** können einem Team zugeordnet werden.
 2. Die Teamzugehörigkeit wird **pro Saison** erfasst (z. B. Spielerin im Team «NLB» in der Saison 2026/27). Eine Saison hat eine Bezeichnung sowie ein Start- und Enddatum.
 3. Jede Teamzugehörigkeit hat eine **Saison**, eine **Rolle** (Spielerin oder Coach), optional eine **Funktion im Team** als Freitext (z. B. Headcoach, Assistenzcoach, Torhüterin, Captain) und – nur bei Spielerinnen – optional eine **Shirtnummer**.
    Verlässt die Person das Team während der Saison, wird das Datum im Attribut **«Ausgetreten»** erfasst; die Mitgliedschaft bleibt erhalten.

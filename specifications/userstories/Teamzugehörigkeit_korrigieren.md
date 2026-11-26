@@ -45,7 +45,7 @@ assignees: []
     - **Dann** ist sie wieder aktuelles Teammitglied der Saison 2026/27
 - [ ] **Szenario 7:** Teamzugehörigkeit löschen
     - **Gegeben** Anna Muster wurde irrtümlich dem Team «U12» zugeordnet
-    - **Wenn** ich diese Zugehörigkeit lösche und die Sicherheitsabfrage bestätige
+    - **Wenn** ich diese Zugehörigkeit lösche und die Warnung «Nur bei einem Fehler löschen, bei einem regulären Abgang den Austritt erfassen» bestätige
     - **Dann** ist die Zugehörigkeit entfernt und erscheint weder in der Teamliste noch in ihrer Teamhistorie
 
 ## 🚫 Nicht im Umfang (Out of Scope)

@@ -45,8 +45,62 @@ classDiagram
         SPONSOR
     }
 
+    class Season {
+        -int id
+        -string name
+        -date startDate
+        -date endDate
+        +isCurrent() bool
+    }
+
+    class Group {
+        -int id
+        -string name
+        -GroupType groupType
+        -GroupStatus status
+        +isActive() bool
+        +canBeDeactivated() bool
+    }
+
+    class GroupType {
+        <<enumeration>>
+        TEAM
+        FUNCTIONARY
+        OTHER
+    }
+
+    class GroupStatus {
+        <<enumeration>>
+        ACTIVE
+        INACTIVE
+    }
+
+    class Membership {
+        -int id
+        -MembershipRole role
+        -string function
+        -int shirtNumber
+        -date exitDate
+        +isActiveOn(date) bool
+    }
+
+    class MembershipRole {
+        <<enumeration>>
+        PLAYER
+        COACH
+        MEMBER
+    }
+
     AbstractPerson <|-- NaturalPerson
     AbstractPerson <|-- LegalPerson
     NaturalPerson <|-- TeamMember
     AbstractPerson --> MemberType : memberType
     TeamMember "0..*" -- "0..*" NaturalPerson : children / guardians
+
+    Group --> GroupType : groupType
+    Group --> GroupStatus : status
+    Group "0..*" -- "0..*" Group : parents / children
+    Membership "0..*" --> "1" Group
+    Membership "0..*" --> "1" AbstractPerson
+    Membership "0..*" --> "1" Season
+    Membership --> MembershipRole : role
