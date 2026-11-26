@@ -9,14 +9,14 @@ assignees: []
 ## 📖 User Story
 
 **Als** Geschäftsführer
-**möchte ich** Teammitglieder (Spielerinnen und Coaches), Passiv- und Ehrenmitglieder sowie Erziehungsberechtigte als natürliche Personen erfassen und verwalten,
+**möchte ich** natürliche Personen (Teammitglieder, Mitglieder, Erziehungsberechtigte, Helfer, …) erfassen und verwalten,
 **damit** wir sie den passenden Gruppen zuordnen und sie kontaktieren können.
 
 ## 🧭 Kontext & Hintergrund
 
 - Epic: Stammdaten verwalten
 - Verwandte Stories: Adressen verwalten, Juristische Personen verwalten, Mitglied einem Team zuordnen
-- Grundlage: `specifications/models/people.md`. Die natürliche Person implementiert die Allgemeine Person (Mitgliederart, E-Mail, Telefon, Adresse (optional), Notiz). Natürliche Personen sind z. B. Spielerinnen, Coaches, Elternteile, Helfer und Funktionäre.
+- Grundlage: `specifications/models/people.md`. Die natürliche Person implementiert die Allgemeine Person (Personenart, E-Mail, Telefon, Adresse (optional), Notiz). Ob jemand Aktiv-, Passiv- oder Ehrenmitglied, Spielerin, Coach oder Funktionärin ist, ergibt sich aus den **Gruppen** (es gibt keine Mitgliederart). Natürliche Personen sind z. B. Spielerinnen, Coaches, Erziehungsberechtigte, Helfer und Funktionärinnen.
 - Spielerinnen und Coaches sind **Teammitglieder** (Spezialisierung der natürlichen Person) mit AHV-Nummer, J+S-Nummer und Einwilligung Foto (nur Minderjährige). Die «Anzahl Helfereinsätze pro Saison» wird später behandelt (siehe `specifications/models/helpers.md`).
   - Ist eine Person Spielerin **und** Coach, gibt es nur **einen** Datensatz; die Rolle (Spielerin/Coach) wird pro Gruppenmitgliedschaft festgelegt (siehe «Mitglied einem Team zuordnen»).
   - Die Shirtnummer gehört zur Teammitgliedschaft, nicht zur Person.
@@ -30,14 +30,14 @@ assignees: []
 
 - [ ] **Szenario 1:** Teammitglied anlegen
     - **Gegeben** ich bin mit der Rolle Admin oder Geschäftsstelle angemeldet
-    - **Wenn** ich eine Person mit Vorname, Nachname, Mitgliederart «Aktiv» und Geburtsdatum als Teammitglied erfasse und speichere
+    - **Wenn** ich eine Person mit Vorname, Nachname und Geburtsdatum als Teammitglied erfasse und speichere
     - **Dann** ist die Person als Teammitglied gespeichert, erscheint in der Personenliste und kann einem Team als Spielerin oder Coach zugeordnet werden
 - [ ] **Szenario 2:** Teammitglied ohne Geburtsdatum
     - **Gegeben** ich erfasse ein Teammitglied
     - **Wenn** ich ohne Geburtsdatum speichere
     - **Dann** wird nicht gespeichert und ich sehe die Meldung «Geburtsdatum ist für Teammitglieder erforderlich»
-- [ ] **Szenario 3:** Passivmitglied, Ehrenmitglied oder Elternteil anlegen
-    - **Gegeben** ich erfasse eine Person mit Mitgliederart «Passiv», «Ehrenmitglied» oder «Elternteil»
+- [ ] **Szenario 3:** Natürliche Person (kein Teammitglied) anlegen
+    - **Gegeben** ich erfasse eine natürliche Person, die kein Teammitglied ist (z. B. Passivmitglied, Ehrenmitglied oder Erziehungsberechtigte)
     - **Wenn** ich ohne Geburtsdatum, AHV- und J+S-Nummer speichere
     - **Dann** wird die Person gespeichert; das Geburtsdatum ist optional, die Felder AHV-Nummer, J+S-Nummer und Einwilligung Foto werden bei diesen Personen nicht angeboten
 - [ ] **Szenario 3a:** Helfer ohne Geburtsdatum
@@ -62,10 +62,10 @@ assignees: []
     - **Dann** kann ich keine Erziehungsberechtigten verknüpfen; dasselbe gilt für Personen, die keine Teammitglieder sind (z. B. Helfer)
 - [ ] **Szenario 7:** Person bearbeiten
     - **Gegeben** eine Person ist gespeichert
-    - **Wenn** ich z. B. Name, Mitgliederart oder Foto-Einwilligung ändere und speichere
+    - **Wenn** ich z. B. Name oder Foto-Einwilligung ändere und speichere
     - **Dann** werden die Änderungen gespeichert und überall angezeigt
 - [ ] **Szenario 8:** Austritt aus dem Verein
-    - **Gegeben** Anna Muster ist in der aktuellen Saison 2026/27 (bis 30.06.2027) Mitglied der Gruppen «U18» und «Passivmitglieder»
+    - **Gegeben** Anna Muster ist in der aktuellen Saison 2026/27 (bis 30.06.2027) Mitglied der Gruppen «U18» und «Passivmitglied»
     - **Wenn** ich «Austritt aus dem Verein» wähle und die Sicherheitsabfrage bestätige
     - **Dann** wird bei allen ihren Mitgliedschaften der aktuellen Saison «Ausgetreten» auf das Saisonende 30.06.2027 gesetzt; sie bleibt bis dahin in ihren Gruppen, gilt ab dem 01.07.2027 als inaktiv und erscheint ab dann nicht mehr als Empfängerin beim E-Mail-Versand; ihre Daten und Mitgliedschaften bleiben erhalten
 - [ ] **Szenario 8a:** Austritt aus dem Verein mit bereits erfasstem Teamaustritt
@@ -101,7 +101,7 @@ assignees: []
 |-----------------------|----------------------------|---------|------------------------------------------------------------------|-------------------|
 | Vorname               | Text                       | ✅      | 2 – 50 Zeichen                                                   | Anna              |
 | Nachname              | Text                       | ✅      | 2 – 50 Zeichen                                                   | Muster            |
-| Mitgliederart         | Enum                       | ✅      | Aktiv / Passiv / Elternteil / Ehrenmitglied (erweiterbar)        | Aktiv             |
+| Personenart           | Auswahl                    | ✅      | natürliche Person (fest; juristische Personen siehe eigene Story) | natürliche Person |
 | Geburtsdatum          | Datum                      | bedingt | Pflicht für Teammitglieder und Helfer; nicht in der Zukunft      | 12.05.2002        |
 | Kinder                | Verknüpfung (Gegenrichtung) | ❌     | ergibt sich aus «Erziehungsberechtigte» der Teammitglieder       | Anna Muster       |
 | Adresse, E-Mail, Telefon | siehe «Adressen verwalten» | –     | Adresse optional                                                 | –                 |
@@ -129,7 +129,6 @@ assignees: []
 ## ❓ Offene Fragen
 
 - Ist bei minderjährigen Teammitgliedern mindestens ein Erziehungsberechtigter Pflicht?
-- Kann eine Person mehrere Mitgliederarten gleichzeitig haben (z. B. Passivmitglied **und** Elternteil)?
 
 ## 🔒 Nicht-funktionale Anforderungen
 

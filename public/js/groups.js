@@ -545,7 +545,7 @@ export async function renderGroupDetail(ctx, id) {
 
         const wasSelected = document.getElementById('assign-person').value;
         const persons = state.persons.filter((person) =>
-            !team || (person.personType === 'NATURAL' && person.teamMember && person.memberType === 'ACTIVE'));
+            !team || (person.personType === 'NATURAL' && person.teamMember));
         document.getElementById('assign-person').innerHTML =
             options(persons.map((person) => ({ value: person.id, label: person.displayName })), wasSelected, ctx);
         document.getElementById('assign-person').disabled = membershipField.value !== '';
@@ -673,12 +673,12 @@ function memberRow(member, ctx) {
 export async function renderPersonGroups(ctx, person) {
     const meta = await ensureGroupMeta();
     const host = document.createElement('div');
-    host.innerHTML = await (await fetch(new URL('views/person-groups.html', document.baseURI))).text();
+    host.innerHTML = await (await fetch(new URL('views/person-groups.html', document.baseURI), { cache: 'no-cache' })).text();
     document.getElementById('app').appendChild(host);
 
     const [groups, seasons] = await Promise.all([api.groups({ status: 'ACTIVE' }), api.seasons()]);
     const eligible = (group) => group.groupType !== 'TEAM'
-        || (person.personType === 'NATURAL' && person.teamMember && person.memberType === 'ACTIVE');
+        || (person.personType === 'NATURAL' && person.teamMember);
     const available = groups.filter(eligible);
 
     const groupSelect = document.getElementById('pa-group');

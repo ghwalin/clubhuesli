@@ -19,8 +19,6 @@ CREATE TABLE IF NOT EXISTS person
 (
     id               INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     person_type      ENUM ('NATURAL','LEGAL')                                      NOT NULL,
-    member_type      ENUM ('ACTIVE','PASSIVE','PARENT','HONORARY',
-        'SPONSOR','PATRON','PARTNER','MUNICIPALITY')                               NOT NULL,
     email            VARCHAR(190) NULL COMMENT 'not unique: families share an address',
     phone            VARCHAR(40) NULL,
     street           VARCHAR(150) NULL,

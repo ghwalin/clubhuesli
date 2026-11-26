@@ -11,7 +11,6 @@ use Clubhuesli\Http\Response;
 use Clubhuesli\Http\Session;
 use Clubhuesli\Model\AbstractPerson;
 use Clubhuesli\Model\LegalPerson;
-use Clubhuesli\Model\MemberType;
 use Clubhuesli\Model\NaturalPerson;
 use Clubhuesli\Model\PersonType;
 use Clubhuesli\Model\Role;
@@ -185,21 +184,11 @@ final class PersonController
     /**
      * Returns the values the forms offer: `GET /api/meta`.
      *
-     * @return Response Person types, member types and roles.
+     * @return Response Person types and the age of majority.
      */
     public function meta(): Response
     {
         $this->requireManager();
-
-        $memberTypes = [];
-        foreach (MemberType::cases() as $case) {
-            $memberTypes[] = [
-                'value'   => $case->value,
-                'label'   => $case->label(),
-                'natural' => $case->appliesTo(PersonType::NATURAL),
-                'legal'   => $case->appliesTo(PersonType::LEGAL),
-            ];
-        }
 
         $personTypes = [];
         foreach (PersonType::cases() as $case) {
@@ -208,7 +197,6 @@ final class PersonController
 
         return Response::ok([
             'personTypes'    => $personTypes,
-            'memberTypes'    => $memberTypes,
             'ageOfMajority'  => NaturalPerson::AGE_OF_MAJORITY,
         ]);
     }

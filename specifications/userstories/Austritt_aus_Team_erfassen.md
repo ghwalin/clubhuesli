@@ -56,5 +56,4 @@ assignees: []
 
 ## ❓ Offene Fragen
 
-- Was passiert, wenn die Mitgliederart einer Person von «Aktiv» auf z. B. «Passiv» geändert wird, während sie in der aktuellen Saison noch in einem Team ist: verhindern, warnen oder Mitgliedschaft automatisch entfernen?
 - Braucht es einen Austrittsgrund (z. B. Teamwechsel, Pause, Verletzung)?

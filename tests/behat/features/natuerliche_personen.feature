@@ -10,7 +10,6 @@ Funktionalität: Natürliche Personen verwalten
     Wenn ich die Person mit folgenden Daten erfasse:
       | personType | NATURAL        |
       | teamMember | true           |
-      | memberType | ACTIVE         |
       | firstName  | Anna           |
       | lastName   | Muster         |
       | birthDate  | vor 22 Jahren  |
@@ -23,16 +22,14 @@ Funktionalität: Natürliche Personen verwalten
     Wenn ich die Person mit folgenden Daten erfasse:
       | personType | NATURAL        |
       | teamMember | true           |
-      | memberType | ACTIVE         |
       | firstName  | Anna           |
       | lastName   | Muster         |
       | email      | anna@muster.ch |
     Dann wird nicht gespeichert und ich sehe die Meldung "Geburtsdatum ist für Teammitglieder erforderlich"
 
-  Szenario: Szenario 3 – Passivmitglied ohne Geburtsdatum, AHV- und J+S-Nummer anlegen
+  Szenario: Szenario 3 – Natürliche Person ohne Geburtsdatum, AHV- und J+S-Nummer anlegen
     Wenn ich die Person mit folgenden Daten erfasse:
       | personType | NATURAL         |
-      | memberType | PASSIVE         |
       | firstName  | Peter           |
       | lastName   | Muster          |
       | email      | peter@muster.ch |
@@ -45,7 +42,6 @@ Funktionalität: Natürliche Personen verwalten
     Wenn ich die Person mit folgenden Daten erfasse:
       | personType | NATURAL          |
       | teamMember | true             |
-      | memberType | ACTIVE           |
       | firstName  | Anna             |
       | lastName   | Muster           |
       | birthDate  | vor 22 Jahren    |
@@ -56,14 +52,12 @@ Funktionalität: Natürliche Personen verwalten
   Szenario: Szenario 5 – Minderjährige mit Erziehungsberechtigten verknüpfen
     Angenommen die Person ist erfasst:
       | personType | NATURAL                   |
-      | memberType | PARENT                    |
       | firstName  | Peter                     |
       | lastName   | Muster                    |
       | email      | familie.muster@example.ch |
     Und die Person ist erfasst:
       | personType | NATURAL       |
       | teamMember | true          |
-      | memberType | ACTIVE        |
       | firstName  | Anna          |
       | lastName   | Muster        |
       | birthDate  | vor 14 Jahren |
@@ -76,14 +70,12 @@ Funktionalität: Natürliche Personen verwalten
   Szenario: Szenario 6 – Erziehungsberechtigte nur bei Minderjährigen
     Angenommen die Person ist erfasst:
       | personType | NATURAL         |
-      | memberType | PARENT          |
       | firstName  | Peter           |
       | lastName   | Muster          |
       | email      | peter@muster.ch |
     Und die Person ist erfasst:
       | personType | NATURAL        |
       | teamMember | true           |
-      | memberType | ACTIVE         |
       | firstName  | Lea            |
       | lastName   | Meier          |
       | birthDate  | vor 25 Jahren  |
@@ -95,7 +87,6 @@ Funktionalität: Natürliche Personen verwalten
     Angenommen die Person ist erfasst:
       | personType | NATURAL        |
       | teamMember | true           |
-      | memberType | ACTIVE         |
       | firstName  | Anna           |
       | lastName   | Muster         |
       | birthDate  | vor 22 Jahren  |
@@ -103,21 +94,18 @@ Funktionalität: Natürliche Personen verwalten
     Wenn ich bei "Anna Muster" folgende Daten speichere:
       | personType | NATURAL        |
       | teamMember | true           |
-      | memberType | HONORARY       |
       | firstName  | Anna           |
       | lastName   | Keller         |
       | birthDate  | vor 22 Jahren  |
       | email      | anna@keller.ch |
     Dann wird die Person gespeichert
     Und ist das Feld "displayName" auf "Anna Keller" gesetzt
-    Und ist das Feld "memberType" auf "HONORARY" gesetzt
     Und erscheint "Anna Keller" in der Personenliste
 
   Szenario: Szenario 9 – Person löschen
     Angenommen die Person ist erfasst:
       | personType | NATURAL        |
       | teamMember | true           |
-      | memberType | ACTIVE         |
       | firstName  | Anna           |
       | lastName   | Muster         |
       | birthDate  | vor 22 Jahren  |
@@ -128,7 +116,6 @@ Funktionalität: Natürliche Personen verwalten
   Szenario: Szenario 10 – Notiz erfassen
     Wenn ich die Person mit folgenden Daten erfasse:
       | personType | NATURAL         |
-      | memberType | PASSIVE         |
       | firstName  | Peter           |
       | lastName   | Muster          |
       | email      | peter@muster.ch |
@@ -140,7 +127,6 @@ Funktionalität: Natürliche Personen verwalten
     Wenn ich die Person mit folgenden Daten erfasse:
       | personType   | NATURAL       |
       | teamMember   | true          |
-      | memberType   | ACTIVE        |
       | firstName    | Anna          |
       | lastName     | Muster        |
       | birthDate    | vor 14 Jahren |
@@ -154,7 +140,6 @@ Funktionalität: Natürliche Personen verwalten
     Wenn ich die Person mit folgenden Daten erfasse:
       | personType   | NATURAL        |
       | teamMember   | true           |
-      | memberType   | ACTIVE         |
       | firstName    | Anna           |
       | lastName     | Muster         |
       | birthDate    | vor 22 Jahren  |

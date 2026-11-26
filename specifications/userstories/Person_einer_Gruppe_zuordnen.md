@@ -15,7 +15,7 @@ assignees: []
 ## 🧭 Kontext & Hintergrund
 
 - Epic: Gruppenzuordnungen verwalten (Grundregeln siehe dort)
-- In Gruppen der Art «Team» können nur natürliche Personen Mitglied sein (Teammitglieder mit Mitgliederart «Aktiv»). In allen anderen Gruppenarten sind alle Mitgliederarten erlaubt.
+- In Gruppen der Art «Team» können nur natürliche Personen Mitglied sein (Teammitglieder). In allen anderen Gruppen sind natürliche und juristische Personen erlaubt.
 - Für Gruppen der Art «Team» gilt zusätzlich die Story «Mitglied einem Team zuordnen» (Rolle, Shirtnummer, nur aktive Teammitglieder).
 - Grundlage: `specifications/models/groups.md` (Mitgliedschaft: Gruppe, Person, Saison, Funktion)
 
@@ -33,10 +33,10 @@ assignees: []
     - **Gegeben** die Gruppe «U18» hat die Gruppenart «Team» und «Muster AG» ist eine juristische Person
     - **Wenn** ich «Muster AG» dem Team zuordnen will
     - **Dann** wird sie nicht zur Auswahl angeboten bzw. abgelehnt mit der Meldung «Nur natürliche Personen können Mitglied eines Teams sein»
-- [ ] **Szenario 2c:** Alle Mitgliederarten in Nicht-Team-Gruppen
+- [ ] **Szenario 2c:** Jede Person in Nicht-Team-Gruppen
     - **Gegeben** die Gruppe «Helfer» hat die Gruppenart «andere»
-    - **Wenn** ich eine Person mit beliebiger Mitgliederart (z. B. Elternteil, Passiv, Sponsor) zuordne
-    - **Dann** wird die Zuordnung gespeichert; die Mitgliederart wird nicht eingeschränkt
+    - **Wenn** ich eine beliebige natürliche oder juristische Person zuordne
+    - **Dann** wird die Zuordnung gespeichert; es gibt keine weitere Einschränkung
 - [ ] **Szenario 3:** Saison ist Pflicht
     - **Gegeben** ich erfasse eine Zuordnung
     - **Wenn** ich keine Saison wähle
@@ -83,7 +83,7 @@ assignees: []
 | Attribut | Typ         | Pflicht | Validierung / Regeln                                   | Beispiel         |
 |----------|-------------|---------|--------------------------------------------------------|------------------|
 | Gruppe   | Verknüpfung | ✅      | Status aktiv                                           | Funktionäre      |
-| Person   | Verknüpfung | ✅      | natürliche oder juristische Person, jede Mitgliederart; bei Teams nur aktive Teammitglieder (natürliche Personen) | Anna Muster |
+| Person   | Verknüpfung | ✅      | natürliche oder juristische Person; bei Teams nur Teammitglieder | Anna Muster |
 | Saison   | Verknüpfung | ✅      | Standard: aktuelle Saison; künftige Saisons erlaubt    | 2026/27          |
 | Funktion | Text        | ❌      | Freitext, max. 100 Zeichen                             | Kassierin        |
 | Ausgetreten | Datum    | ❌      | beim Zuordnen leer; siehe «Austritt aus einer Gruppe erfassen» | –        |

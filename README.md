@@ -96,7 +96,7 @@ Benutzer mit der Rolle Admin oder Geschäftsstelle.
 | POST    | `/api/auth/login`            | Anmelden (`email`, `password`)                  |
 | POST    | `/api/auth/logout`           | Abmelden                                        |
 | GET     | `/api/auth/me`               | Angemeldetes Konto                              |
-| GET     | `/api/meta`                  | Personen- und Mitgliederarten für die Formulare |
+| GET     | `/api/meta`                  | Personenarten für die Formulare |
 | GET     | `/api/persons`               | Personenliste (`search`, `personType`)          |
 | POST    | `/api/persons`               | Person erfassen                                 |
 | GET     | `/api/persons/{id}`          | Person inkl. Erziehungsberechtigte und Kinder   |
@@ -153,16 +153,29 @@ Admidio-Organisation). Exit-Code 3 heisst: der Import lief, einzelne Personen mu
 Regeln (`src/Import/AdmidioMapper.php`):
 
 * **Saison:** die Saison, die den Stichtag enthält (1.7.–30.6., z. B. 2026/27); sie wird angelegt.
-* **Mitgliedschaften:** Rollen der Organisation werden zu Gruppen; übernommen werden
-  Mitgliedschaften, deren Ende noch nicht erreicht ist. Ein Enddatum innerhalb der Saison wird
-  zum Austrittsdatum. Systemrollen (Kategorie «COMMON», z. B. Administrator) sind keine Gruppen.
-* **Gruppenart:** Rollen der Kategorie «TEAMS» sind Teams (Leiter = Coach, sonst Spielerin, mit
-  Trikot-Nr.), «Vorstand», «Funktionäre» und «Spielsekretär:innen» Funktionäre, alle anderen
-  «Andere». Die Funktion von Vorstand/Funktionären entsteht aus den angekreuzten Feldern.
-* **Personen:** Mitglieder in einem Team oder in «Aktivmitglied» sind «Aktiv» (Teammitglied,
-  wenn ein Geburtsdatum vorhanden ist), «Ehrenmitglieder» sind Ehrenmitglieder, alle anderen
-  Passiv. Personen einer Sponsorrolle mit Firma oder Sponsorenname werden juristische Personen
-  (Kontaktperson = das Admidio-Profil). Nicht gültige oder archivierte Konten werden übersprungen.
+* **Gruppen:** Der Import legt die Standardgruppen von Chilis samt Hierarchie an
+  (`chilis/groups.md`, `src/Import/ChilisGroups.php`, `database/seed_groups.sql`): 8 Teams und
+  die Gruppen Aktivmitglied (mit Vorstand, Funktionärin > Spielsekretärin, Spielerin, Coach,
+  Ehrenmitglied, Schiedsrichter), Passivmitglied (Freimitglied, 200er Club), Alumni und Partner
+  (Sponsoren, Persönliche Sponsoren, Gemeinden). Eine Mitgliederart gibt es nicht mehr, es zählen
+  nur Personenart (natürlich/juristisch) und Gruppen.
+* **Rollen → Gruppen** (`ROLE_GROUPS` im Mapper): z. B. «Funktionäre» → Funktionärin,
+  «Spielsekretär:innen» → Spielsekretärin, «Trainer:innen» → Coach, «Ehrenmitglieder» →
+  Ehrenmitglied, «Gönner» → 200er Club, «Sponsor» → Sponsoren, «Gemeindepräsidenten» → Gemeinden,
+  «B-/C-Juniorinnen» → Jun B/Jun C, «U17B-Juniorinnen» → U17B. Das Häkchen «beitragsbefreit» ergibt
+  Freimitglied, die Schiedsrichter-Felder ergeben Schiedsrichter. Rollen ohne Gruppe werden mit
+  der Anzahl aktiver Mitgliedschaften gemeldet. Systemrollen (Kategorie «COMMON», z. B.
+  Administrator) sind keine Gruppen.
+* **Zuordnungen:** Übernommen werden Mitgliedschaften, deren Ende noch nicht erreicht ist. Ein
+  Enddatum innerhalb der Saison wird zum Austrittsdatum. In Teams ist der Leiter Coach, sonst
+  Spielerin (mit Trikot-Nr.); Spielerinnen gehören zusätzlich zur Gruppe «Spielerin», Coaches
+  zur Gruppe «Coach». Die Funktion von Vorstand/Funktionärin entsteht aus den angekreuzten Feldern.
+* **Personen:** Mitglieder von «Sponsor», «Persönliche Sponsoren» und «Gemeindepräsidenten» sind
+  **immer** juristische Personen (Name = Firma bzw. Sponsorenname, sonst der Name der Person;
+  Kontaktperson = das Admidio-Profil; keine Teamzuordnung); auch ein «Gönner» mit Firma wird
+  juristische Person. Alle anderen sind natürliche Personen; wer in einem Team oder in
+  «Aktivmitglied» ist und ein Geburtsdatum hat, wird Teammitglied. Nicht gültige oder
+  archivierte Konten werden übersprungen.
 * **Eltern:** Bei Minderjährigen wird mit «Vorname Nachname» und E-Mail der Eltern ein
   Erziehungsberechtigter angelegt (Geschwister teilen ihn). Sonst landen die Angaben in der
   Notiz, und die E-Mail der Eltern dient als Kontaktadresse.
@@ -170,3 +183,9 @@ Regeln (`src/Import/AdmidioMapper.php`):
   AHV-Nummer), werden verworfen, in der Notiz festgehalten und gemeldet. Personen ohne
   E-Mail-Adresse (Pflichtfeld) werden nicht importiert, sondern in der Ausgabe aufgelistet.
 * Nicht übernommen werden Passwörter, Konten, Mitteilungen, Termine und das Änderungsprotokoll.
+
+## Migration einer bestehenden Datenbank
+
+Die Mitgliederart (`person.member_type`) ist entfallen. Bestehende Datenbanken einmal anpassen:
+`mysql -u root -p clubhuesli < database/migrate_remove_member_type.sql`. Die Standardgruppen
+(optional): `mysql -u root -p clubhuesli < database/seed_groups.sql`.

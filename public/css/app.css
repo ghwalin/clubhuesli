@@ -80,7 +80,7 @@ a {
 
 .main {
     flex: 1;
-    width: min(1100px, 100%);
+    width: 90%;
     margin: 0 auto;
     padding: 1.5rem;
 }
@@ -386,7 +386,53 @@ textarea:focus {
     .table__actions {
         text-align: left;
     }
+
+    /* The person list keeps its sort buttons and filters: they are shown as a panel above the cards. */
+    #person-table thead {
+        display: block;
+        margin-bottom: var(--space);
+    }
+
+    #person-table thead tr {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 0.25rem 0;
+    }
+
+    #person-table thead th {
+        display: block;
+        padding: 0;
+        border: 0;
+    }
+
+    #person-table thead .table__actions {
+        display: none;
+    }
+
+    #person-table .table__sort {
+        padding: 0.35rem 0.7rem;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        background: var(--color-surface);
+    }
+
+    #person-table .table__filters th {
+        flex: 1 1 45%;
+    }
+
+    #person-table .table__filters th:empty {
+        display: none;
+    }
+
+    #person-table .table__filters th::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 0.75rem;
+        color: var(--color-muted);
+    }
 }
+
 
 /* Group hierarchy */
 .tree,
@@ -398,4 +444,49 @@ textarea:focus {
 
 .tree li {
     margin: 0.25rem 0;
+}
+
+/* Sortable and filterable table headers */
+.table__sort {
+    all: unset;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font: inherit;
+    text-transform: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+}
+
+.table__sort:hover,
+.table__sort:focus-visible {
+    color: var(--color-primary);
+}
+
+.table__sort::after {
+    content: '\2195';
+    opacity: 0.4;
+}
+
+.table__sort[data-direction='asc']::after {
+    content: '\25B2';
+    opacity: 1;
+}
+
+.table__sort[data-direction='desc']::after {
+    content: '\25BC';
+    opacity: 1;
+}
+
+.table__filters th {
+    padding-top: 0;
+    text-transform: none;
+}
+
+.table__filters input,
+.table__filters select {
+    width: 100%;
+    min-width: 6rem;
+    font-size: 0.85rem;
 }

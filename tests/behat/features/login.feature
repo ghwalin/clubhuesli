@@ -28,7 +28,6 @@ Funktionalität: Minimaler Login für Admin und Geschäftsstelle
     Angenommen ich bin nicht angemeldet
     Wenn ich die Person mit folgenden Daten erfasse:
       | personType | NATURAL         |
-      | memberType | PASSIVE         |
       | firstName  | Peter           |
       | lastName   | Muster          |
       | email      | peter@muster.ch |

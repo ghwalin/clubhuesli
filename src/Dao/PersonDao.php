@@ -23,7 +23,7 @@ class PersonDao
 {
     /** Columns of a person including every specialisation. */
     private const SELECT_COLUMNS = '
-        p.id, p.person_type, p.member_type, p.email, p.phone, p.street, p.house_number,
+        p.id, p.person_type, p.email, p.phone, p.street, p.house_number,
         p.address_addition, p.zip, p.city, p.country, p.note,
         n.first_name, n.last_name, n.birth_date,
         t.person_id AS team_member_id, t.ahv_number, t.js_number, t.photo_consent,
@@ -278,14 +278,13 @@ class PersonDao
     private function insertPerson(AbstractPerson $person): int
     {
         $statement = $this->connection()->prepare(
-            'INSERT INTO person (person_type, member_type, email, phone, street, house_number,'
+            'INSERT INTO person (person_type, email, phone, street, house_number,'
             . ' address_addition, zip, city, country, note)'
-            . ' VALUES (:personType, :memberType, :email, :phone, :street, :houseNumber,'
+            . ' VALUES (:personType, :email, :phone, :street, :houseNumber,'
             . ' :addressAddition, :zip, :city, :country, :note)'
         );
         $statement->execute([
             'personType'      => $person->getPersonType()->value,
-            'memberType'      => $person->getMemberType()?->value,
             'email'           => $person->getEmail(),
             'phone'           => $person->getPhone(),
             'street'          => $person->getStreet(),
@@ -316,12 +315,11 @@ class PersonDao
         }
 
         $statement = $this->connection()->prepare(
-            'UPDATE person SET member_type = :memberType, email = :email, phone = :phone,'
+            'UPDATE person SET email = :email, phone = :phone,'
             . ' street = :street, house_number = :houseNumber, address_addition = :addressAddition,'
             . ' zip = :zip, city = :city, country = :country, note = :note WHERE id = :id'
         );
         $statement->execute([
-            'memberType'      => $person->getMemberType()?->value,
             'email'           => $person->getEmail(),
             'phone'           => $person->getPhone(),
             'street'          => $person->getStreet(),
@@ -474,7 +472,6 @@ class PersonDao
     private function hydrateCommon(AbstractPerson $person, array $row): void
     {
         $person->setId((int) $row['id']);
-        $person->setMemberType(self::asString($row['member_type'] ?? null));
         $person->setCountry(self::asString($row['country'] ?? null));
         $person->setEmail(self::asString($row['email'] ?? null));
         $person->setPhone(self::asString($row['phone'] ?? null));

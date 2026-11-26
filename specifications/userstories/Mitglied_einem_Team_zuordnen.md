@@ -22,21 +22,21 @@ assignees: []
 ## ✅ Akzeptanzkriterien
 
 - [ ] **Szenario 1:** Spielerin einem Team zuordnen
-    - **Gegeben** ich bin mit der Rolle Admin oder Geschäftsstelle angemeldet und Anna Muster ist ein Teammitglied mit Mitgliederart «Aktiv»
+    - **Gegeben** ich bin mit der Rolle Admin oder Geschäftsstelle angemeldet und Anna Muster ist ein Teammitglied
     - **Wenn** ich sie dem Team «U18» für die Saison 2026/27 mit Rolle «Spielerin» zuordne
     - **Dann** ist sie in der Teamliste «U18» der Saison 2026/27 als Spielerin aufgeführt
 - [ ] **Szenario 2:** Coach einem Team zuordnen
-    - **Gegeben** Lea Meier ist ein Teammitglied mit Mitgliederart «Aktiv»
+    - **Gegeben** Lea Meier ist ein Teammitglied
     - **Wenn** ich sie dem Team «U12» für die Saison 2026/27 mit Rolle «Coach» zuordne
     - **Dann** ist sie in der Teamliste «U12» der Saison 2026/27 als Coach aufgeführt
 - [ ] **Szenario 3:** Person als Spielerin und als Coach
     - **Gegeben** Lea Meier ist in der Saison 2026/27 Spielerin im Team «U18»
     - **Wenn** ich sie für dieselbe Saison zusätzlich als Coach dem Team «U12» zuordne
     - **Dann** ist sie in «U18» als Spielerin und in «U12» als Coach aufgeführt; es gibt weiterhin nur einen Personen-Datensatz
-- [ ] **Szenario 4:** Nur Teammitglieder mit Mitgliederart «Aktiv»
-    - **Gegeben** Peter Muster hat die Mitgliederart «Passiv» oder «Elternteil» bzw. ist kein Teammitglied
+- [ ] **Szenario 4:** Nur Teammitglieder
+    - **Gegeben** Peter Muster ist eine natürliche Person, aber kein Teammitglied
     - **Wenn** ich ihn einem Team zuordnen will
-    - **Dann** wird er in der Auswahl nicht angeboten bzw. die Zuordnung wird mit der Meldung «Nur aktive Teammitglieder können einem Team zugeordnet werden» abgelehnt
+    - **Dann** wird er in der Auswahl nicht angeboten bzw. die Zuordnung wird mit der Meldung «Nur Teammitglieder können einem Team zugeordnet werden» abgelehnt
 - [ ] **Szenario 4b:** Juristische Person
     - **Gegeben** «Muster AG» ist eine juristische Person
     - **Wenn** ich sie einem Team zuordnen will
@@ -95,7 +95,7 @@ assignees: []
 | Attribut         | Typ          | Pflicht | Validierung / Regeln                                          | Beispiel     |
 |------------------|--------------|---------|---------------------------------------------------------------|--------------|
 | Team             | Verknüpfung  | ✅      | nur Gruppen der Art «Team» mit Status aktiv                    | U18          |
-| Person           | Verknüpfung  | ✅      | Teammitglied mit Mitgliederart «Aktiv»                        | Anna Muster  |
+| Person           | Verknüpfung  | ✅      | Teammitglied (natürliche Person)                              | Anna Muster  |
 | Saison           | Verknüpfung  | ✅      | Standard: aktuelle Saison; künftige Saisons erlaubt           | 2026/27      |
 | Rolle            | Enum         | ✅      | Spielerin / Coach                                             | Spielerin    |
 | Funktion im Team | Text         | ❌      | Freitext, max. 100 Zeichen                                    | Headcoach, Torhüterin |

@@ -75,7 +75,7 @@ final class AdmidioImporter
     public function import(array $plan): array
     {
         $counts = [
-            'seasons' => 0, 'groups' => 0, 'persons' => 0, 'personsExisting' => 0, 'guardians' => 0,
+            'seasons' => 0, 'groups' => 0, 'links' => 0, 'persons' => 0, 'personsExisting' => 0, 'guardians' => 0,
             'memberships' => 0, 'membershipsExisting' => 0, 'skipped' => count($plan['skipped']),
             'failed' => 0,
         ];
@@ -87,6 +87,7 @@ final class AdmidioImporter
 
         $season = $this->ensureSeason($plan['season'], $counts);
         $groups = $this->ensureGroups($plan['groups'], $counts, $warnings);
+        $this->ensureLinks($plan['links'] ?? [], $groups, $counts);
 
         /** @var array<string, int> $guardianIds Ids of guardians created in this run, by name and e-mail. */
         $guardianIds = [];
@@ -183,6 +184,31 @@ final class AdmidioImporter
         }
 
         return $groups;
+    }
+
+    /**
+     * Creates the parent/child links of the group hierarchy that do not exist yet.
+     *
+     * @param array<int, array{0: string, 1: string}> $links  Pairs of parent name and child name.
+     * @param array<string, Group>                    $groups The groups by name.
+     * @param array<string, int>                      $counts Counters.
+     */
+    private function ensureLinks(array $links, array $groups, array &$counts): void
+    {
+        $existing = [];
+        foreach ($this->groupDao->findLinks() as [$parentId, $childId]) {
+            $existing[$parentId . '-' . $childId] = true;
+        }
+        foreach ($links as [$parent, $child]) {
+            if (!isset($groups[$parent], $groups[$child])) {
+                continue;
+            }
+            $key = $groups[$parent]->getId() . '-' . $groups[$child]->getId();
+            if (!isset($existing[$key])) {
+                $this->groupDao->addLink((int) $groups[$parent]->getId(), (int) $groups[$child]->getId());
+                $counts['links']++;
+            }
+        }
     }
 
     /**

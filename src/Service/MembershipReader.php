@@ -295,8 +295,6 @@ final class MembershipReader
             'personId'     => $person->getId(),
             'displayName'  => $person->getDisplayName(),
             'personType'   => $person->getPersonType()->value,
-            'memberType'   => $person->getMemberType()?->value,
-            'memberTypeLabel' => $person->getMemberType()?->label(),
             'role'         => $via === [] ? $membership->getRole()->value : MembershipRole::MEMBER->value,
             'roleLabel'    => $via === [] ? $membership->getRole()->label() : MembershipRole::MEMBER->label(),
             'function'     => $via === [] ? $membership->getFunction() : null,

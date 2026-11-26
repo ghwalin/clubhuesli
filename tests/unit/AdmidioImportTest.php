@@ -54,17 +54,18 @@ final class AdmidioImportTest extends TestCase
         $plan = $this->mapper()->plan();
 
         self::assertSame('2026/27', $plan['season']['name']);
-        self::assertSame(
-            ['Aktivmitglied' => 'OTHER', 'NLB' => 'TEAM', 'Sponsor' => 'OTHER', 'Vorstand' => 'FUNCTIONARY'],
-            $plan['groups']
-        );
+        self::assertCount(24, $plan['groups'], 'the standard groups of Chilis are always created');
+        self::assertSame('TEAM', $plan['groups']['NLB']);
+        self::assertSame('FUNCTIONARY', $plan['groups']['Vorstand']);
+        self::assertContains(['Aktivmitglied', 'Vorstand'], $plan['links']);
+        self::assertSame([], $plan['unmapped']);
         self::assertSame([10, 11, 12, 14, 15], array_keys($plan['persons']));
         self::assertSame(['archiviert am 2022-04-27'], array_column($plan['skipped'], 'reason'));
     }
 
     /**
-     * Team leaders become coaches, players get the shirt number, ACTIVE members
-     * with a birth date become team members.
+     * Team leaders become coaches, players get the shirt number; members of a team
+     * or of «Aktivmitglied» with a birth date become team members.
      */
     public function testMapperMapsTeamMembers(): void
     {
@@ -72,7 +73,6 @@ final class AdmidioImportTest extends TestCase
 
         $player = $persons[10];
         self::assertTrue($player['payload']['teamMember']);
-        self::assertSame('ACTIVE', $player['payload']['memberType']);
         self::assertSame('PLAYER', $player['memberships'][0]['role']);
         self::assertSame(7, $player['memberships'][0]['shirtNumber']);
         self::assertSame('Dorfstrasse', $player['payload']['street']);
@@ -82,8 +82,10 @@ final class AdmidioImportTest extends TestCase
         $coach = $persons[11];
         self::assertSame('COACH', $coach['memberships'][0]['role']);
         self::assertNull($coach['memberships'][0]['shirtNumber']);
-        self::assertSame('Vorstand', $coach['memberships'][1]['group']);
-        self::assertSame('Kassier', $coach['memberships'][1]['function']);
+        // a team leader also belongs to the group «Coach», a player to «Spielerin»
+        self::assertSame(['NLB', 'Coach', 'Vorstand'], array_column($coach['memberships'], 'group'));
+        self::assertSame(['NLB', 'Spielerin', 'Aktivmitglied'], array_column($player['memberships'], 'group'));
+        self::assertSame('Kassier', $coach['memberships'][2]['function']);
     }
 
     /**
@@ -95,9 +97,32 @@ final class AdmidioImportTest extends TestCase
         $persons = $this->mapper()->plan()['persons'];
 
         self::assertSame('LEGAL', $persons[12]['payload']['personType']);
-        self::assertSame('SPONSOR', $persons[12]['payload']['memberType']);
         self::assertSame('Jensen AG', $persons[12]['payload']['name']);
         self::assertSame('2027-01-31', $persons[12]['memberships'][0]['exitDate']);
+    }
+
+    /**
+     * Members of «Gemeindepräsidenten», «Sponsor» and «Persönliche Sponsoren» are
+     * always legal persons, even without a company name and even when they are
+     * also active members; team memberships then drop out.
+     */
+    public function testSponsorRolesAreAlwaysLegalPersons(): void
+    {
+        $persons = $this->mapper(true)->plan()['persons'];
+
+        $municipality = $persons[17];
+        self::assertSame('LEGAL', $municipality['payload']['personType']);
+        self::assertSame('Gerda Gemeinde', $municipality['payload']['name']);
+        self::assertSame(['Gemeinden', 'Aktivmitglied'], array_column($municipality['memberships'], 'group'));
+        self::assertNotContains('NLB', array_column($municipality['memberships'], 'group'));
+
+        $personal = $persons[18];
+        self::assertSame('LEGAL', $personal['payload']['personType']);
+        self::assertSame('Paul Privat', $personal['payload']['name']);
+        self::assertSame('Paul', $personal['payload']['contactFirstName']);
+
+        // the sponsor with a company keeps the company name
+        self::assertSame('Jensen AG', $persons[12]['payload']['name']);
     }
 
     /**
@@ -110,7 +135,7 @@ final class AdmidioImportTest extends TestCase
 
         self::assertSame('Peter', $minor['guardian']['firstName']);
         self::assertSame('Muster', $minor['guardian']['lastName']);
-        self::assertSame('PARENT', $minor['guardian']['memberType']);
+        self::assertSame('NATURAL', $minor['guardian']['personType']);
     }
 
     /**
@@ -129,16 +154,19 @@ final class AdmidioImportTest extends TestCase
         $first = $importer->import($plan);
 
         self::assertSame(1, $first['counts']['seasons']);
-        self::assertSame(4, $first['counts']['groups']);
+        self::assertSame(24, $first['counts']['groups']);
+        self::assertSame(12, $first['counts']['links']);
         self::assertSame(1, $first['counts']['guardians']);
         self::assertSame(4, $first['counts']['persons'], 'a minor without e-mail is valid with its guardian');
         self::assertSame(1, $first['counts']['failed'], 'the person without e-mail address is reported');
-        self::assertSame(6, $first['counts']['memberships']);
+        self::assertSame(9, $first['counts']['memberships']);
         self::assertCount(1, $season->findAll());
         self::assertNotNull($group->findByName('NLB'));
 
         $second = $importer->import($plan);
 
+        self::assertSame(0, $second['counts']['groups']);
+        self::assertSame(0, $second['counts']['links']);
         self::assertSame(0, $second['counts']['persons']);
         self::assertSame(0, $second['counts']['memberships']);
         self::assertSame($first['counts']['memberships'], $second['counts']['membershipsExisting']);
@@ -175,9 +203,11 @@ final class AdmidioImportTest extends TestCase
     /**
      * Builds a mapper for a small synthetic dump.
      *
+     * @param bool $withSponsors Whether to add a municipality president and a personal sponsor.
+     *
      * @return AdmidioMapper The mapper.
      */
-    private function mapper(): AdmidioMapper
+    private function mapper(bool $withSponsors = false): AdmidioMapper
     {
         $fields = [
             1 => ['LAST_NAME', 1, 'Nachname'], 2 => ['FIRST_NAME', 1, 'Vorname'], 3 => ['STREET', 1, 'Strasse'],
@@ -237,6 +267,21 @@ final class AdmidioImportTest extends TestCase
         $role = static fn (int $id, int $cat, string $name): array =>
             ['rol_id' => $id, 'rol_cat_id' => $cat, 'rol_name' => $name, 'rol_valid' => 1];
 
+        if ($withSponsors) {
+            // 17: municipality president who is also an active team player; 18: personal sponsor without company.
+            $set(17, ['FIRST_NAME' => 'Gerda', 'LAST_NAME' => 'Gemeinde', 'BIRTHDAY' => '1970-01-01', 'EMAIL' => 'gerda@example.ch']);
+            $set(18, ['FIRST_NAME' => 'Paul', 'LAST_NAME' => 'Privat', 'EMAIL' => 'paul@example.ch']);
+            $users[] = ['usr_id' => 17, 'usr_valid' => 1];
+            $users[] = ['usr_id' => 18, 'usr_valid' => 1];
+            array_push(
+                $members,
+                ['mem_rol_id' => 32, 'mem_usr_id' => 17, 'mem_begin' => '2020-01-01', 'mem_end' => '9999-12-31', 'mem_leader' => 0],
+                ['mem_rol_id' => 2, 'mem_usr_id' => 17, 'mem_begin' => '2020-01-01', 'mem_end' => '9999-12-31', 'mem_leader' => 0],
+                ['mem_rol_id' => 9, 'mem_usr_id' => 17, 'mem_begin' => '2020-01-01', 'mem_end' => '9999-12-31', 'mem_leader' => 0],
+                ['mem_rol_id' => 33, 'mem_usr_id' => 18, 'mem_begin' => '2020-01-01', 'mem_end' => '9999-12-31', 'mem_leader' => 0],
+            );
+        }
+
         return new AdmidioMapper([
             'adm_users'       => $users,
             'adm_user_data'   => $data,
@@ -249,7 +294,8 @@ final class AdmidioImportTest extends TestCase
             ],
             'adm_roles'       => [
                 $role(1, 4, 'Administrator'), $role(9, 7, 'NLB'), $role(2, 25, 'Aktivmitglied'),
-                $role(3, 25, 'Vorstand'), $role(30, 5, 'Sponsor'),
+                $role(3, 25, 'Vorstand'), $role(30, 5, 'Sponsor'), $role(32, 5, 'Gemeindepräsidenten'),
+                $role(33, 5, 'Persönliche Sponsoren'),
             ],
         ], new DateTimeImmutable(self::TODAY));
     }
