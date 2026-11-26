@@ -13,42 +13,59 @@ use DateTimeImmutable;
  * persons are imported, of which kind, which groups and memberships they get
  * and which data had to be dropped. {@see AdmidioImporter} writes the plan.
  *
- * Rules (see `docs` in the README of the import):
+ * Rules:
  *  - Only memberships that are active on the reference day (end date not
  *    reached) or start within the current season are imported, so the result
  *    is the current state. Only valid accounts that are not archived count.
- *  - Roles of the organisation come over as groups. System roles (category
- *    `COMMON`, e.g. Administrator) are not groups. Roles in the category
- *    `TEAMS` become groups of type team; a leader becomes coach, everybody
- *    else a player.
- *  - Persons in a team role or in the role «Aktivmitglied» get the member type
- *    active (and become team members when they have a birth date). Others
- *    become honorary members or passive members. Persons of a sponsor role
- *    with a company name become legal persons.
+ *  - The roles of Admidio are mapped to the groups of Chilis
+ *    ({@see ChilisGroups}, see ROLE_GROUPS); the members of a sub-group belong to
+ *    the parent groups through the hierarchy. System roles (category `COMMON`,
+ *    e.g. Administrator) are not groups. A leader of a team is a coach, everybody
+ *    else a player; players also belong to the group «Spielerin», coaches to
+ *    «Coach». The checkbox «beitragsbefreit» puts a person into «Freimitglied»,
+ *    the referee fields into «Schiedsrichter».
+ *  - Members of «Sponsor», «Persönliche Sponsoren» and «Gemeindepräsidenten» are
+ *    always legal persons (the name of the person is used when no company is
+ *    known); they cannot be team members. A «Gönner» with a company name is a
+ *    legal person, too. Everybody else is a natural person; persons in a team or
+ *    in «Aktivmitglied» become team members when they have a birth date.
  */
 final class AdmidioMapper
 {
     /** Role category names (intern) that are no groups. */
     private const EXCLUDED_CATEGORIES = ['COMMON', 'EVENTS'];
 
-    /** Category of the team roles. */
-    private const TEAM_CATEGORY = 'TEAMS';
-
-    /** Category of the sponsor roles. */
-    private const SPONSOR_CATEGORY = 'GROUPS';
-
     /** Name of the role that marks active members. */
     private const ACTIVE_ROLE = 'Aktivmitglied';
 
-    /** Roles outside of the teams that are groups of officials. */
-    private const FUNCTIONARY_ROLES = ['Vorstand', 'Funktionäre', 'Spielsekretär:innen'];
+    /** Roles whose members are always legal persons. */
+    private const ALWAYS_LEGAL_ROLES = ['Gemeindepräsidenten', 'Sponsor', 'Persönliche Sponsoren'];
 
-    /** Member type of legal persons by sponsor role. */
-    private const LEGAL_MEMBER_TYPES = [
-        'Gönner'              => 'PATRON',
-        'Sponsor'             => 'SPONSOR',
-        'Persönliche Sponsoren' => 'SPONSOR',
-        'Gemeindepräsidenten' => 'MUNICIPALITY',
+    /** Roles whose members are legal persons when a company is known (and they are no active member). */
+    private const LEGAL_WITH_COMPANY_ROLES = ['Gönner'];
+
+    /** Admidio role => group of Chilis. Roles that are not listed are reported and not imported. */
+    private const ROLE_GROUPS = [
+        'NLB'                   => 'NLB',
+        '1. Liga KF'            => '1. Liga KF',
+        'U21B'                  => 'U21B',
+        'U17B'                  => 'U17B',
+        'U17B-Juniorinnen'      => 'U17B',
+        'B-Juniorinnen'         => 'Jun B',
+        'C-Juniorinnen'         => 'Jun C',
+        'Starters'              => 'Starters',
+        'Starters / Jun E'      => 'Starters',
+        'Aktivmitglied'         => 'Aktivmitglied',
+        'Vorstand'              => 'Vorstand',
+        'Funktionäre'           => 'Funktionärin',
+        'Spielsekretär:innen'   => 'Spielsekretärin',
+        'Trainer:innen'         => 'Coach',
+        'Ehrenmitglieder'       => 'Ehrenmitglied',
+        'Alumni'                => 'Alumni',
+        'Gönner'                => '200er Club',
+        'Sponsor'               => 'Sponsoren',
+        'Persönliche Sponsoren' => 'Persönliche Sponsoren',
+        'Gemeindepräsidenten'   => 'Gemeinden',
     ];
 
     /** Country codes of Admidio (ISO 3166-1 alpha-3) to the codes of Clubadmin. */
@@ -90,9 +107,11 @@ final class AdmidioMapper
      * @return array{
      *     season: array{name: string, start: string, end: string},
      *     groups: array<string, string>,
+     *     links: array<int, array{0: string, 1: string}>,
      *     persons: array<int, array<string, mixed>>,
-     *     skipped: array<int, array{id: int, name: string, reason: string}>
-     * } The plan.
+     *     skipped: array<int, array{id: int, name: string, reason: string}>,
+     *     unmapped: array<string, int>
+     * } The plan; `unmapped` counts the active memberships of roles that map to no group.
      */
     public function plan(): array
     {
@@ -101,6 +120,7 @@ final class AdmidioMapper
         $this->indexUserData();
 
         $memberships = [];
+        $unmapped    = [];
         foreach ($this->tables['adm_members'] ?? [] as $member) {
             $roleId = (int) $member['mem_rol_id'];
             if (!isset($this->groups[$roleId])) {
@@ -109,6 +129,10 @@ final class AdmidioMapper
             $begin = (string) $member['mem_begin'];
             $end   = (string) $member['mem_end'];
             if ($end < $this->today->format('Y-m-d') || $begin > $season['end']) {
+                continue;
+            }
+            if ($this->groups[$roleId]['group'] === null) {
+                $unmapped[$this->groups[$roleId]['name']] = ($unmapped[$this->groups[$roleId]['name']] ?? 0) + 1;
                 continue;
             }
             $memberships[(int) $member['mem_usr_id']][] = [
@@ -125,7 +149,6 @@ final class AdmidioMapper
 
         $persons = [];
         $skipped = [];
-        $groups  = [];
         foreach ($memberships as $userId => $entries) {
             $data = $this->userData[$userId] ?? [];
             $name = trim(($data['FIRST_NAME'] ?? '') . ' ' . ($data['LAST_NAME'] ?? ''));
@@ -144,16 +167,17 @@ final class AdmidioMapper
                 continue;
             }
 
-            $person = $this->mapPerson($userId, $data, $entries, $season);
-            foreach ($person['memberships'] as $membership) {
-                $groups[$membership['group']] = $membership['groupType'];
-            }
-            $persons[$userId] = $person;
+            $persons[$userId] = $this->mapPerson($userId, $data, $entries, $season);
         }
 
-        ksort($groups);
-
-        return ['season' => $season, 'groups' => $groups, 'persons' => $persons, 'skipped' => $skipped];
+        return [
+            'season'   => $season,
+            'groups'   => ChilisGroups::groups(),
+            'links'    => ChilisGroups::links(),
+            'persons'  => $persons,
+            'skipped'  => $skipped,
+            'unmapped' => $unmapped,
+        ];
     }
 
     /**
@@ -173,7 +197,7 @@ final class AdmidioMapper
     }
 
     /**
-     * Collects the roles that become groups.
+     * Collects the roles of the organisation and the group each one maps to.
      */
     private function indexGroups(): void
     {
@@ -185,23 +209,17 @@ final class AdmidioMapper
             }
         }
 
+        $types = ChilisGroups::groups();
         foreach ($this->tables['adm_roles'] ?? [] as $role) {
-            $category = $categories[(int) $role['rol_cat_id']] ?? null;
-            if ($category === null || (int) $role['rol_valid'] !== 1) {
+            if (!isset($categories[(int) $role['rol_cat_id']]) || (int) $role['rol_valid'] !== 1) {
                 continue;
             }
-            $name = trim((string) $role['rol_name']);
-            if ($category === self::TEAM_CATEGORY) {
-                $type = 'TEAM';
-            } elseif (in_array($name, self::FUNCTIONARY_ROLES, true)) {
-                $type = 'FUNCTIONARY';
-            } else {
-                $type = 'OTHER';
-            }
+            $name  = trim((string) $role['rol_name']);
+            $group = self::ROLE_GROUPS[$name] ?? null;
             $this->groups[(int) $role['rol_id']] = [
-                'name'     => $name,
-                'type'     => $type,
-                'category' => $category,
+                'name'  => $name,
+                'group' => $group,
+                'type'  => $group === null ? null : $types[$group],
             ];
         }
     }
@@ -244,14 +262,13 @@ final class AdmidioMapper
         $inTeam    = array_filter($entries, static fn (array $entry): bool => $entry['role']['type'] === 'TEAM') !== [];
         $isActive  = $inTeam || in_array(self::ACTIVE_ROLE, $roleNames, true);
 
+        // Members of these roles are always legal persons; the name of the person stands in for a missing company.
         $company = $data['SPONSORENNAME'] ?? $data['FIRMA'] ?? null;
-        $legalRole = null;
-        foreach ($roleNames as $roleName) {
-            if (isset(self::LEGAL_MEMBER_TYPES[$roleName])) {
-                $legalRole = $roleName;
-            }
+        $isLegal = array_intersect(self::ALWAYS_LEGAL_ROLES, $roleNames) !== []
+            || (!$isActive && $company !== null && array_intersect(self::LEGAL_WITH_COMPANY_ROLES, $roleNames) !== []);
+        if ($isLegal) {
+            $company ??= $data['FIRST_NAME'] . ' ' . $data['LAST_NAME'];
         }
-        $isLegal = !$isActive && $legalRole !== null && $company !== null;
 
         $notes = [];
         foreach (['EMAIL_2' => 'E-Mail 2', 'CHILISMAIL' => 'Chilis-Mail', 'LIZENZNUMMER' => 'Lizenznummer',
@@ -267,8 +284,8 @@ final class AdmidioMapper
         }
 
         $payload = [
-            'email'   => $data['EMAIL'] ?? null,
-            'phone'   => $this->phone($data['MOBILE'] ?? null) ?? $this->phone($data['PHONE'] ?? null),
+            'email' => $data['EMAIL'] ?? null,
+            'phone' => $this->phone($data['MOBILE'] ?? null) ?? $this->phone($data['PHONE'] ?? null),
         ];
         $otherPhone = isset($data['MOBILE']) ? $this->phone($data['PHONE'] ?? null) : null;
         if ($otherPhone !== null && $otherPhone !== $payload['phone']) {
@@ -282,7 +299,6 @@ final class AdmidioMapper
         if ($isLegal) {
             $payload += [
                 'personType'       => 'LEGAL',
-                'memberType'       => self::LEGAL_MEMBER_TYPES[$legalRole],
                 'name'             => $company,
                 'contactFirstName' => $data['FIRST_NAME'],
                 'contactLastName'  => $data['LAST_NAME'],
@@ -292,10 +308,8 @@ final class AdmidioMapper
             if ($isActive && $birthDate === null) {
                 $warnings[] = 'kein Geburtsdatum: nicht als Teammitglied importiert, Teamzuordnungen entfallen';
             }
-            $memberType = $isActive ? 'ACTIVE' : (in_array('Ehrenmitglieder', $roleNames, true) ? 'HONORARY' : 'PASSIVE');
             $payload += [
                 'personType' => 'NATURAL',
-                'memberType' => $memberType,
                 'firstName'  => $data['FIRST_NAME'],
                 'lastName'   => $data['LAST_NAME'],
                 'birthDate'  => $birthDate,
@@ -338,37 +352,61 @@ final class AdmidioMapper
      */
     private function mapMemberships(array $entries, array $data, bool $teamMember, array $season, array &$warnings): array
     {
+        $types       = ChilisGroups::groups();
         $memberships = [];
+        $add         = static function (string $group, ?string $role, ?string $function, ?int $shirt, ?string $exit) use (&$memberships, $types): void {
+            $key = $group . '|' . ($role ?? '');
+            // the same group and role twice (e.g. coach by team leader and by role): keep the first
+            $memberships[$key] ??= [
+                'group'       => $group,
+                'groupType'   => $types[$group],
+                'role'        => $role,
+                'function'    => $function,
+                'shirtNumber' => $shirt,
+                'exitDate'    => $exit,
+            ];
+        };
+
         foreach ($entries as $entry) {
-            $role  = $entry['role'];
+            $role   = $entry['role'];
             $isTeam = $role['type'] === 'TEAM';
             if ($isTeam && !$teamMember) {
-                $warnings[] = 'Zuordnung zu «' . $role['name'] . '» entfällt (kein Teammitglied)';
+                $warnings[] = 'Zuordnung zu «' . $role['group'] . '» entfällt (kein Teammitglied)';
                 continue;
             }
             $end  = (string) $entry['end'];
             $exit = $end !== '9999-12-31' && $end <= $season['end'] ? $end : null;
 
-            $memberships[] = [
-                'group'       => $role['name'],
-                'groupType'   => $role['type'],
-                'role'        => $isTeam ? ($entry['leader'] ? 'COACH' : 'PLAYER') : null,
-                'function'    => $this->functionText($role['name'], $data),
-                'shirtNumber' => $isTeam && !$entry['leader'] ? ($this->shirtNumber($data['TRIKOTNR'] ?? null)) : null,
-                'exitDate'    => $exit,
-            ];
+            if ($isTeam) {
+                $add($role['group'], $entry['leader'] ? 'COACH' : 'PLAYER', null,
+                    $entry['leader'] ? null : $this->shirtNumber($data['TRIKOTNR'] ?? null), $exit);
+                // players and coaches also belong to the groups of the same name
+                $add($entry['leader'] ? 'Coach' : 'Spielerin', null, null, null, $exit);
+                continue;
+            }
+            $add($role['group'], null, $this->functionText($role['group'], $data), null, $exit);
         }
 
-        return $memberships;
+        if (($data['AKTIVES_FREIMITGLIED'] ?? '0') === '1') {
+            $add('Freimitglied', null, null, null, null);
+        }
+        foreach (['SCHIEDSRICHTER_KF', 'SCHIEDSRICHTER_GF', 'SCHIEDSRICHTER_OBSERVER'] as $field) {
+            if (($data[$field] ?? '0') === '1') {
+                $add('Schiedsrichter', null, null, null, null);
+                break;
+            }
+        }
+
+        return array_values($memberships);
     }
 
     /**
      * Builds the function text from the checked function fields.
      *
-     * The board role takes the fields of the category «Vorstand», the role
-     * «Funktionäre» those of the category «Funktionen».
+     * The group «Vorstand» takes the fields of the category «Vorstand», the
+     * group «Funktionärin» those of the category «Funktionen».
      *
-     * @param string                $roleName Name of the role.
+     * @param string                $roleName Name of the group.
      * @param array<string, string> $data     Field values of the user.
      *
      * @return string|null The function, or null when none is checked.
@@ -376,8 +414,8 @@ final class AdmidioMapper
     private function functionText(string $roleName, array $data): ?string
     {
         $category = match ($roleName) {
-            'Vorstand'    => 'VORSTAND',
-            'Funktionäre' => 'FUNKTIONEN',
+            'Vorstand'     => 'VORSTAND',
+            'Funktionärin' => 'FUNKTIONEN',
             default       => null,
         };
         if ($category === null) {
@@ -503,7 +541,6 @@ final class AdmidioMapper
             && preg_match('/^(\p{Lu}[\p{L}\'-]+(?: \p{Lu}[\p{L}\'-]+)?) (\p{Lu}[\p{L}\'-]+)$/u', $parentName, $matches) === 1) {
             return [
                 'personType' => 'NATURAL',
-                'memberType' => 'PARENT',
                 'firstName'  => $matches[1],
                 'lastName'   => $matches[2],
                 'email'      => $parentEmail,

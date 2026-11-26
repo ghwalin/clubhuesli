@@ -411,31 +411,31 @@ final class GroupApiTest extends TestCase
     }
 
     /**
-     * Every member type is allowed outside of teams.
+     * Every kind of person (natural or legal) is allowed outside of teams.
      */
-    public function testAnyMemberTypeIsAllowedOutsideTeams(): void
+    public function testAnyPersonIsAllowedOutsideTeams(): void
     {
         $group = $this->createGroup('Helfer', 'OTHER');
-        $peter = $this->createNaturalPerson('Peter', 'Muster', 'PARENT');
+        $peter = $this->createNaturalPerson('Peter', 'Muster');
 
         self::assertSame(201, $this->send('POST', '/memberships', ['groupId' => $group, 'personId' => $peter])->getStatus());
     }
 
     /**
-     * Legal persons and non-active persons are refused for teams.
+     * Legal persons and natural persons that are no team members are refused for teams.
      */
     public function testTeamAcceptsOnlyActiveTeamMembers(): void
     {
         $team  = $this->createGroup('U18', 'TEAM');
         $legal = $this->createLegalPerson('Muster AG');
-        $peter = $this->createNaturalPerson('Peter', 'Muster', 'PASSIVE');
+        $peter = $this->createNaturalPerson('Peter', 'Muster');
 
         $refusedLegal = $this->send('POST', '/memberships', ['groupId' => $team, 'personId' => $legal, 'role' => 'PLAYER']);
         self::assertSame(422, $refusedLegal->getStatus());
         self::assertSame('Nur natürliche Personen können Mitglied eines Teams sein', $refusedLegal->getData()['error']);
 
         $refusedPassive = $this->send('POST', '/memberships', ['groupId' => $team, 'personId' => $peter, 'role' => 'PLAYER']);
-        self::assertSame('Nur aktive Teammitglieder können einem Team zugeordnet werden', $refusedPassive->getData()['error']);
+        self::assertSame('Nur Teammitglieder können einem Team zugeordnet werden', $refusedPassive->getData()['error']);
     }
 
     /**
@@ -873,14 +873,13 @@ final class GroupApiTest extends TestCase
      *
      * @param string $first      First name.
      * @param string $last       Last name.
-     * @param string $memberType Member type.
      *
      * @return int The id.
      */
-    private function createNaturalPerson(string $first, string $last, string $memberType = 'ACTIVE'): int
+    private function createNaturalPerson(string $first, string $last): int
     {
         $response = $this->send('POST', '/persons', [
-            'personType' => 'NATURAL', 'memberType' => $memberType, 'firstName' => $first,
+            'personType' => 'NATURAL', 'firstName' => $first,
             'lastName' => $last, 'email' => strtolower($first) . '@example.ch',
         ]);
         self::assertSame(201, $response->getStatus());
@@ -899,7 +898,7 @@ final class GroupApiTest extends TestCase
     private function createTeamMember(string $first, string $last): int
     {
         $response = $this->send('POST', '/persons', [
-            'personType' => 'NATURAL', 'teamMember' => true, 'memberType' => 'ACTIVE', 'firstName' => $first,
+            'personType' => 'NATURAL', 'teamMember' => true, 'firstName' => $first,
             'lastName' => $last, 'birthDate' => (new DateTimeImmutable('-22 years'))->format('Y-m-d'),
             'email' => strtolower($first) . '@example.ch',
         ]);
@@ -918,7 +917,7 @@ final class GroupApiTest extends TestCase
     private function createLegalPerson(string $name): int
     {
         $response = $this->send('POST', '/persons', [
-            'personType' => 'LEGAL', 'memberType' => 'SPONSOR', 'name' => $name,
+            'personType' => 'LEGAL', 'name' => $name,
             'contactFirstName' => 'Beat', 'contactLastName' => 'Keller', 'email' => 'info@example.ch',
         ]);
         self::assertSame(201, $response->getStatus(), (string) ($response->getData()['error'] ?? ''));

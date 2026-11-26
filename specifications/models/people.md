@@ -1,7 +1,7 @@
 # People: Classes and Attributes
 ## Allgemeine Person (abstract)
 Wird im Datenmodell als Entität abgebildet mit Beziehungen zu den spezialisierten Tabellen.
-- Mitgliederart (Aktiv, Passiv, Elternteil, Sponsor, …)
+- Personenart (natürliche Person oder juristische Person). Eine «Mitgliederart» gibt es nicht mehr: ob jemand Aktivmitglied, Passivmitglied, Freimitglied, Sponsor, … ist, ergibt sich aus den **Gruppen** (siehe `groups.md`).
 - E-Mail
 - Telefonnummer
 - Adresse (optional)
@@ -13,7 +13,7 @@ Wird im Datenmodell als Entität abgebildet mit Beziehungen zu den spezialisiert
 - Notizfeld
 
 ## Natürliche Person
-Implementiert allgemeine Person (Spielerin, Coach, Elternteil, Helfer, Funktionär, ...)
+Implementiert allgemeine Person (Spielerin, Coach, Erziehungsberechtigte, Helfer, Funktionärin, ...; die Zuordnung dazu erfolgt über Gruppen)
 - Vorname
 - Nachname
 - Geburtsdatum (Pflicht für Teammitglieder und Helfer, sonst optional)
@@ -27,7 +27,7 @@ Implementiert allgemeine Person
 
 ## Teammitglieder (bisher: Aktive Spielerin / Coach)
 Erbt von natürliche Person
-Nur Teammitglieder mit Mitgliederart «Aktiv» können Mitglied eines Teams (Gruppenart Team) sein; juristische Personen nie. In anderen Gruppenarten sind alle Personen und Mitgliederarten erlaubt (siehe `groups.md`).
+Nur Teammitglieder können Mitglied eines Teams (Gruppenart Team) sein; juristische Personen nie. In allen anderen Gruppen sind natürliche und juristische Personen erlaubt (siehe `groups.md`).
 - AHV-Nummer
 - J+S-Nummer
 - Beziehung zu Erziehungsberechtigten (optional, nur minderjährige)

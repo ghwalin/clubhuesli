@@ -310,8 +310,8 @@ class Membership
             if ($checkPerson && !$person instanceof NaturalPerson) {
                 return [['field' => 'personId', 'message' => 'Nur natürliche Personen können Mitglied eines Teams sein']];
             }
-            if ($checkPerson && (!$person instanceof TeamMember || $person->getMemberType() !== MemberType::ACTIVE)) {
-                return [['field' => 'personId', 'message' => 'Nur aktive Teammitglieder können einem Team zugeordnet werden']];
+            if ($checkPerson && !$person instanceof TeamMember) {
+                return [['field' => 'personId', 'message' => 'Nur Teammitglieder können einem Team zugeordnet werden']];
             }
             if ($this->getRole() === MembershipRole::MEMBER) {
                 $errors[] = ['field' => 'role', 'message' => 'Bitte Rolle wählen (Spielerin oder Coach)'];

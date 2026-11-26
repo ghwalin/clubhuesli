@@ -7,34 +7,29 @@
         </div>
     </header>
 
-    <form id="person-filter" class="toolbar" novalidate>
-        <div class="field field--inline">
-            <label for="filter-search">Suche</label>
-            <input type="search" id="filter-search" name="search" placeholder="Name, Firma oder E-Mail">
-        </div>
-        <div class="field field--inline">
-            <label for="filter-type">Personenart</label>
-            <select id="filter-type" name="personType">
-                <option value="">Alle</option>
-                <option value="NATURAL">Natürliche Personen</option>
-                <option value="LEGAL">Juristische Personen</option>
-            </select>
-        </div>
-        <button type="submit" class="button">Filtern</button>
-    </form>
-
     <p class="form-error" id="person-list-error" hidden></p>
 
-    <table class="table">
+    <table class="table" id="person-table">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Personenart</th>
-                <th>Mitgliederart</th>
-                <th>E-Mail</th>
-                <th>Telefon</th>
-                <th>Ort</th>
+                <th><button type="button" class="table__sort" data-sort="displayName">Name</button></th>
+                <th><button type="button" class="table__sort" data-sort="personType">Personenart</button></th>
+                <th><button type="button" class="table__sort" data-sort="email">E-Mail</button></th>
+                <th><button type="button" class="table__sort" data-sort="phone">Telefon</button></th>
                 <th class="table__actions">Aktionen</th>
+            </tr>
+            <tr class="table__filters">
+                <th data-label="Name"><input type="search" data-filter="displayName" placeholder="Filtern" aria-label="Name filtern"></th>
+                <th data-label="Personenart">
+                    <select data-filter="personType" aria-label="Personenart filtern">
+                        <option value="">Alle</option>
+                        <option value="NATURAL">Natürlich</option>
+                        <option value="LEGAL">Juristisch</option>
+                    </select>
+                </th>
+                <th data-label="E-Mail"><input type="search" data-filter="email" placeholder="Filtern" aria-label="E-Mail filtern"></th>
+                <th data-label="Telefon"><input type="search" data-filter="phone" placeholder="Filtern" aria-label="Telefon filtern"></th>
+                <th></th>
             </tr>
         </thead>
         <tbody id="person-rows"></tbody>

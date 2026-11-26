@@ -11,3 +11,11 @@ RewriteRule ^ index.html [L]
 
 # Do not list directories.
 Options -Indexes
+
+# Static files change with every release: let the browser revalidate (ETag) instead of
+# guessing a lifetime, otherwise an old view can end up next to a new script.
+<IfModule mod_headers.c>
+    <FilesMatch "\.(html|js|css)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+</IfModule>

@@ -30,7 +30,6 @@ Funktionalität: Gruppen verwalten
     Angenommen die Gruppe "Funktionäre" der Art FUNCTIONARY ist erfasst
     Und die Person ist erfasst:
       | personType | NATURAL        |
-      | memberType | PASSIVE        |
       | firstName  | Peter          |
       | lastName   | Muster         |
       | email      | peter@muster.ch |

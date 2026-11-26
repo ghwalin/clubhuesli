@@ -45,7 +45,8 @@ const viewContext = {
  */
 async function loadView(name) {
     if (!viewCache.has(name)) {
-        const response = await fetch(new URL(`views/${name}.html`, document.baseURI));
+        // `no-cache`: always revalidate, so a changed view is never combined with a newer script.
+        const response = await fetch(new URL(`views/${name}.html`, document.baseURI), { cache: 'no-cache' });
         if (!response.ok) {
             throw new Error(`Ansicht «${name}» konnte nicht geladen werden`);
         }
@@ -191,41 +192,78 @@ async function renderLogin() {
 async function renderPersonList() {
     await showView('person-list');
 
-    const form = document.getElementById('person-filter');
-    form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        void refreshRows();
-    });
+    /** @type {Array<object>} All persons, loaded once; sorting and filtering happen in the browser. */
+    let persons = [];
+    /** @type {{key: string, direction: 'asc'|'desc'}} Current sort order. */
+    let sort = { key: 'displayName', direction: 'asc' };
+    const collator = new Intl.Collator('de-CH', { sensitivity: 'base', numeric: true });
+    const table = document.getElementById('person-table');
 
     /**
-     * Reloads the rows of the table with the current filter.
+     * Reads the values of the filter fields.
      *
-     * @returns {Promise<void>}
+     * @returns {Record<string, string>} Filter text per column.
      */
-    async function refreshRows() {
-        setMessage('person-list-error', null);
-        const tbody = document.getElementById('person-rows');
-
-        try {
-            const persons = await api.persons({
-                search: document.getElementById('filter-search').value.trim(),
-                personType: document.getElementById('filter-type').value,
-            });
-
-            if (persons.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="hint">Keine Personen gefunden.</td></tr>';
-            } else {
-                tbody.innerHTML = persons.map(personRow).join('');
-            }
-            document.getElementById('person-count').textContent =
-                `${persons.length} ${persons.length === 1 ? 'Person' : 'Personen'}`;
-        } catch (error) {
-            tbody.innerHTML = '';
-            setMessage('person-list-error', error instanceof ApiError ? error.message : 'Liste konnte nicht geladen werden');
-        }
+    function currentFilters() {
+        const filters = {};
+        table.querySelectorAll('[data-filter]').forEach((input) => {
+            filters[input.dataset.filter] = input.value.trim().toLowerCase();
+        });
+        return filters;
     }
 
-    await refreshRows();
+    /**
+     * Applies filters and sort order and renders the rows.
+     */
+    function renderRows() {
+        const filters = currentFilters();
+        const visible = persons.filter((person) => Object.entries(filters).every(([key, needle]) => {
+            if (needle === '') {
+                return true;
+            }
+            const value = String(person[key] ?? '').toLowerCase();
+            return key === 'personType' ? value === needle : value.includes(needle);
+        }));
+
+        const factor = sort.direction === 'asc' ? 1 : -1;
+        visible.sort((a, b) => factor * collator.compare(String(a[sort.key] ?? ''), String(b[sort.key] ?? '')));
+
+        const tbody = document.getElementById('person-rows');
+        tbody.innerHTML = visible.length === 0
+            ? '<tr><td colspan="5" class="hint">Keine Personen gefunden.</td></tr>'
+            : visible.map(personRow).join('');
+        document.getElementById('person-count').textContent = visible.length === persons.length
+            ? `${persons.length} ${persons.length === 1 ? 'Person' : 'Personen'}`
+            : `${visible.length} von ${persons.length} Personen`;
+
+        table.querySelectorAll('[data-sort]').forEach((button) => {
+            if (button.dataset.sort === sort.key) {
+                button.dataset.direction = sort.direction;
+            } else {
+                delete button.dataset.direction;
+            }
+        });
+    }
+
+    table.querySelectorAll('[data-sort]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const key = button.dataset.sort;
+            sort = { key, direction: sort.key === key && sort.direction === 'asc' ? 'desc' : 'asc' };
+            renderRows();
+        });
+    });
+    table.querySelectorAll('[data-filter]').forEach((input) => {
+        input.addEventListener(input.tagName === 'SELECT' ? 'change' : 'input', renderRows);
+    });
+
+    setMessage('person-list-error', null);
+    try {
+        persons = await api.persons();
+        renderRows();
+    } catch (error) {
+        document.getElementById('person-rows').innerHTML = '';
+        setMessage('person-list-error', error instanceof ApiError ? error.message : 'Liste konnte nicht geladen werden');
+    }
 }
 
 /**
@@ -250,10 +288,8 @@ function personRow(person) {
                 ${badges.join(' ')}
             </td>
             <td>${person.personType === 'LEGAL' ? 'Juristisch' : 'Natürlich'}</td>
-            <td>${escapeHtml(person.memberTypeLabel)}</td>
             <td>${person.email ? `<a href="mailto:${escapeHtml(person.email)}">${escapeHtml(person.email)}</a>` : '–'}</td>
             <td>${escapeHtml(person.phone ?? '–')}</td>
-            <td>${escapeHtml(person.city ?? '–')}</td>
             <td class="table__actions"><a class="button button--small" href="#/persons/${person.id}">Bearbeiten</a></td>
         </tr>`;
 }
@@ -275,7 +311,7 @@ async function ensureMeta() {
         state.meta = await api.meta();
         ageOfMajority = state.meta.ageOfMajority ?? ageOfMajority;
     } catch (error) {
-        state.meta = { memberTypes: [] };
+        state.meta = {};
     }
 }
 
@@ -309,7 +345,6 @@ async function renderPersonForm(target) {
         ? `${person.displayName} bearbeiten`
         : (personType === 'LEGAL' ? 'Neue juristische Person' : 'Neue natürliche Person');
 
-    fillMemberTypeOptions(personType, person?.memberType ?? null);
     await fillGuardianOptions(person);
 
     if (person) {
@@ -431,23 +466,6 @@ function toggleMarker(marker, visible) {
 }
 
 /**
- * Fills the member types of the person type into the select element.
- *
- * @param {string} personType Person type, `NATURAL` or `LEGAL`.
- * @param {string|null} selected Member type to preselect.
- */
-function fillMemberTypeOptions(personType, selected) {
-    const select = document.getElementById('memberType');
-    const key = personType === 'LEGAL' ? 'legal' : 'natural';
-    const options = (state.meta?.memberTypes ?? []).filter((memberType) => memberType[key]);
-
-    select.innerHTML = ['<option value="">Bitte wählen</option>']
-        .concat(options.map((option) => `<option value="${option.value}">${escapeHtml(option.label)}</option>`))
-        .join('');
-    select.value = selected ?? '';
-}
-
-/**
  * Fills the natural persons available as guardians into the select element.
  *
  * @param {object|null} person The person being edited, excluded from the list.
@@ -532,7 +550,6 @@ function collectForm(personType) {
 
     const payload = {
         personType,
-        memberType: value('memberType'),
         email: value('email'),
         phone: value('phone'),
         street: value('street'),

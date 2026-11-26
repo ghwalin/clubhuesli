@@ -9,7 +9,6 @@ Funktionalität: Adressen verwalten
   Szenario: Szenario 1 – Adresse einer natürlichen Person erfassen
     Wenn ich die Person mit folgenden Daten erfasse:
       | personType  | NATURAL         |
-      | memberType  | PASSIVE         |
       | firstName   | Peter           |
       | lastName    | Muster          |
       | street      | Dorfstrasse     |
@@ -24,14 +23,12 @@ Funktionalität: Adressen verwalten
   Szenario: Szenario 2 – Minderjähriges Teammitglied ohne eigene E-Mail
     Angenommen die Person ist erfasst:
       | personType | NATURAL                   |
-      | memberType | PARENT                    |
       | firstName  | Peter                     |
       | lastName   | Muster                    |
       | email      | familie.muster@example.ch |
     Wenn ich die Person mit folgenden Daten erfasse:
       | personType | NATURAL       |
       | teamMember | true          |
-      | memberType | ACTIVE        |
       | firstName  | Anna          |
       | lastName   | Muster        |
       | birthDate  | vor 14 Jahren |
@@ -43,7 +40,6 @@ Funktionalität: Adressen verwalten
   Szenario: Szenario 3 – Adresse einer juristischen Person erfassen
     Wenn ich die Person mit folgenden Daten erfasse:
       | personType       | LEGAL          |
-      | memberType       | SPONSOR        |
       | name             | Jensen AG      |
       | contactFirstName | Anna           |
       | contactLastName  | Muster         |
@@ -59,7 +55,6 @@ Funktionalität: Adressen verwalten
   Szenario: Szenario 4 – Ungültige E-Mail-Adresse
     Wenn ich die Person mit folgenden Daten erfasse:
       | personType | NATURAL |
-      | memberType | PASSIVE |
       | firstName  | Peter   |
       | lastName   | Muster  |
       | email      | anna@   |
@@ -68,13 +63,11 @@ Funktionalität: Adressen verwalten
   Szenario: Szenario 5 – Gemeinsame E-Mail-Adresse
     Angenommen die Person ist erfasst:
       | personType | NATURAL                   |
-      | memberType | PARENT                    |
       | firstName  | Peter                     |
       | lastName   | Muster                    |
       | email      | familie.muster@example.ch |
     Wenn ich die Person mit folgenden Daten erfasse:
       | personType | NATURAL                   |
-      | memberType | PARENT                    |
       | firstName  | Petra                     |
       | lastName   | Muster                    |
       | email      | familie.muster@example.ch |
@@ -85,7 +78,6 @@ Funktionalität: Adressen verwalten
   Szenario: Szenario 6 – Ungültige Schweizer PLZ
     Wenn ich die Person mit folgenden Daten erfasse:
       | personType | NATURAL         |
-      | memberType | PASSIVE         |
       | firstName  | Peter           |
       | lastName   | Muster          |
       | email      | peter@muster.ch |
@@ -98,7 +90,6 @@ Funktionalität: Adressen verwalten
   Szenario: Szenario 7 – Person ohne Postadresse
     Wenn ich die Person mit folgenden Daten erfasse:
       | personType | NATURAL         |
-      | memberType | PASSIVE         |
       | firstName  | Peter           |
       | lastName   | Muster          |
       | email      | peter@muster.ch |
@@ -108,7 +99,6 @@ Funktionalität: Adressen verwalten
   Szenario: Szenario 8 – Unvollständige Postadresse
     Wenn ich die Person mit folgenden Daten erfasse:
       | personType | NATURAL         |
-      | memberType | PASSIVE         |
       | firstName  | Peter           |
       | lastName   | Muster          |
       | email      | peter@muster.ch |

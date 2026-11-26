@@ -1,6 +1,6 @@
 ---
 name: 📘 Juristische Personen verwalten
-about: Juristische Personen (Sponsoren, Gönner, Partner, Gemeinden) inkl. Kontaktperson anlegen und verwalten
+about: Juristische Personen (z. B. Sponsoren, Gemeinden) inkl. Kontaktperson anlegen und verwalten
 title: "[Story] Juristische Personen verwalten"
 labels: ["user-story", "needs-refinement"]
 assignees: []
@@ -9,14 +9,14 @@ assignees: []
 ## 📖 User Story
 
 **Als** Geschäftsführer
-**möchte ich** Sponsoren, Gönner, Partner und Gemeinden als juristische Personen mit ihrer Kontaktperson erfassen und verwalten,
+**möchte ich** Sponsoren, Partner und Gemeinden als juristische Personen mit ihrer Kontaktperson erfassen und verwalten,
 **damit** wir sie den passenden Gruppen zuordnen und gezielt die Ansprechperson kontaktieren können.
 
 ## 🧭 Kontext & Hintergrund
 
 - Epic: Stammdaten verwalten
 - Verwandte Stories: Adressen verwalten, Natürliche Personen verwalten
-- Grundlage: `specifications/models/people.md`. Eine juristische Person erbt **nicht** von der natürlichen Person, implementiert aber wie diese die Allgemeine Person (Mitgliederart, E-Mail, Telefon, Adresse (optional), Notiz).
+- Grundlage: `specifications/models/people.md`. Eine juristische Person erbt **nicht** von der natürlichen Person, implementiert aber wie diese die Allgemeine Person (Personenart, E-Mail, Telefon, Adresse (optional), Notiz).
 - Eintritts- und Austrittsdatum gibt es bei der Person nicht mehr. Die Zugehörigkeit zum Verein ergibt sich aus den Gruppenmitgliedschaften pro Saison (z. B. Gruppe «Sponsoren» in der Saison 2026/27, siehe `specifications/models/groups.md`). Ein Austritt während der Saison wird an der Gruppenmitgliedschaft mit dem Attribut «Ausgetreten» erfasst.
 - Pro juristische Person wird genau eine Kontaktperson mit Vor- und Nachname erfasst. E-Mail und Telefon sind die der juristischen Person.
 - **Entscheid:** Die Kontaktperson ist kein eigener Datensatz und wird **nicht** mit natürlichen Personen verknüpft. Ist ein Mitglied gleichzeitig Kontaktperson, wird es doppelt erfasst. Diese seltene Redundanz wird bewusst in Kauf genommen.
@@ -25,8 +25,8 @@ assignees: []
 
 - [ ] **Szenario 1:** Juristische Person mit Kontaktperson anlegen
     - **Gegeben** ich bin mit der Rolle Admin oder Geschäftsstelle angemeldet
-    - **Wenn** ich eine juristische Person mit Name, Mitgliederart, E-Mail sowie Vor- und Nachname der Kontaktperson erfasse und speichere
-    - **Dann** ist die juristische Person gespeichert und erscheint mit ihrer Mitgliederart in der Personenliste
+    - **Wenn** ich eine juristische Person mit Name, E-Mail sowie Vor- und Nachname der Kontaktperson erfasse und speichere
+    - **Dann** ist die juristische Person gespeichert und erscheint mit der Personenart «juristische Person» in der Personenliste
 - [ ] **Szenario 2:** Ohne Kontaktperson nicht speicherbar
     - **Gegeben** ich erfasse eine neue juristische Person
     - **Wenn** ich speichere, ohne Vor- oder Nachname der Kontaktperson erfasst zu haben
@@ -37,7 +37,7 @@ assignees: []
     - **Dann** wird bei der juristischen Person «Beat Keller» als Kontaktperson angezeigt
 - [ ] **Szenario 4:** Juristische Person bearbeiten
     - **Gegeben** eine juristische Person ist gespeichert
-    - **Wenn** ich z. B. Name, Mitgliederart oder Adresse ändere und speichere
+    - **Wenn** ich z. B. Name oder Adresse ändere und speichere
     - **Dann** werden die Änderungen gespeichert und überall angezeigt
 - [ ] **Szenario 5:** Unterstützung endet
     - **Gegeben** die Jensen AG ist in der Saison 2025/26 Mitglied der Gruppe «Sponsoren»
@@ -67,7 +67,7 @@ assignees: []
 | Attribut          | Typ                       | Pflicht | Validierung / Regeln                    | Beispiel        |
 |-------------------|---------------------------|---------|-----------------------------------------|-----------------|
 | Name              | Text                      | ✅      | 2 – 200 Zeichen                         | Jensen AG       |
-| Mitgliederart     | Enum                      | ✅      | Sponsor / Gönner / Partner / Gemeinde (erweiterbar) | Sponsor |
+| Personenart       | Auswahl                   | ✅      | juristische Person (fest)                           | juristische Person |
 | Adresse           | siehe «Adressen verwalten» | ❌      | optional; wenn erfasst: Strasse, PLZ, Ort | Dorfstrasse 12, 8000 Zürich |
 | E-Mail            | E-Mail                    | ✅      | gültiges Format                         | info@jensen.ch  |
 | Telefon           | Text                      | ❌      | internationales Format                  | +41 44 123 45 67 |
@@ -85,7 +85,6 @@ assignees: []
 
 ## ❓ Offene Fragen
 
-- Kann eine juristische Person mehrere Mitgliederarten haben (z. B. Sponsor **und** Partner)?
 - Braucht es mehrere Kontaktpersonen oder einen Hauptkontakt (z. B. für «z. Hd.» in der Postadresse)? Aktuell nicht vorgesehen.
 - An wen gehen E-Mails beim Gruppenversand: an die E-Mail der juristischen Person (z. Hd. der Kontaktperson)?
 

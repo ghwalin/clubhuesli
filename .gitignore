@@ -7,3 +7,4 @@ config/config.local.php
 .phpunit.cache/
 .phpunit.result.cache
 /config/nginx.example.conf
+/chilis/

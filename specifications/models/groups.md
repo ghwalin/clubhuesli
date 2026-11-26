@@ -29,9 +29,32 @@ Zuordnung einer Person zu einer Gruppe für genau eine Saison.
 
 ### Regeln
 - Pro Person, Gruppe und Saison höchstens eine Mitgliedschaft (bei Teams zusätzlich pro Rolle).
-- **Team:** Mitglied können nur natürliche Personen sein, und zwar nur Teammitglieder mit Mitgliederart «Aktiv» (siehe `people.md`).
-- **Andere Gruppenarten:** Alle Mitgliederarten und beide Personenarten (natürlich/juristisch) sind erlaubt.
+- **Team:** Mitglied können nur natürliche Personen sein, und zwar nur Teammitglieder (siehe `people.md`).
+- **Andere Gruppenarten:** Beide Personenarten (natürliche und juristische Personen) sind erlaubt.
 - Mitgliedschaften können gelöscht werden (nur zur Korrektur von Fehlern, mit Warnung). Ein regulärer Abgang wird über «Ausgetreten» bzw. Nicht-Zuordnung in der Folgesaison abgebildet.
+
+## Standardgruppen von Chilis
+Die Gruppen von Chilis (`chilis/groups.md`, Skript `database/seed_groups.sql`):
+- **Teams:** NLB, 1. Liga KF, U21B, U17B, Jun B, Jun C, Jun D, Starters
+- **Gruppen** (eingerückt = Untergruppe):
+  - Aktivmitglied
+    - Vorstand
+    - Funktionärin
+      - Spielsekretärin
+    - Spielerin
+    - Coach
+    - Ehrenmitglied
+    - Schiedsrichter
+  - Passivmitglied
+    - Freimitglied
+    - 200er Club
+  - Alumni
+  - Partner
+    - Sponsoren
+    - Persönliche Sponsoren
+    - Gemeinden
+
+Dank der transitiven Zugehörigkeit gehört z. B. ein Mitglied der Gruppe «Spielsekretärin» auch zu «Funktionärin» und «Aktivmitglied».
 
 ## Beziehungen
 - Gruppen können Gruppen enthalten (z.B. Materialverantwortlicher und Webmaster sind Funktionäre)
@@ -45,5 +68,4 @@ Zuordnung einer Person zu einer Gruppe für genau eine Saison.
 
 ## Offene Fragen
 - Was passiert beim Löschen einer Mitgliedschaft mit abhängigen Daten (z.B. Teilnahmen, siehe `teamplan.md`)?
-- Was passiert, wenn die Mitgliederart eines Teammitglieds von «Aktiv» geändert wird, während es in der aktuellen Saison noch in einem Team ist?
 - Braucht es einen Austrittsgrund?

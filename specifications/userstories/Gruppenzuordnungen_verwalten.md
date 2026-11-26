@@ -22,7 +22,7 @@ assignees: []
 ## 📏 Grundregeln (gelten für alle Sub-Stories)
 
 1. Eine Zuordnung gilt **immer für genau eine Saison** (Person + Gruppe + Saison). Für mehrere Saisons sind mehrere Zuordnungen nötig.
-2. Zugeordnet werden können **natürliche und juristische Personen**. Es gibt keine Einschränkung nach Mitgliederart. Ausnahme: **Mitglied eines Teams** (Gruppenart «Team») können nur **natürliche Personen** sein. Eine Person ist mit einem Datensatz erfasst und kann in derselben Saison mehreren Gruppen angehören.
+2. Zugeordnet werden können **natürliche und juristische Personen**. Ausnahme: **Mitglied eines Teams** (Gruppenart «Team») können nur **natürliche Personen** sein. Eine Person ist mit einem Datensatz erfasst und kann in derselben Saison mehreren Gruppen angehören.
 3. Zugeordnet werden kann nur zu Gruppen mit Status **aktiv**. Ist die Gruppe inaktiv, können keine neuen Personen zugeordnet werden.
 4. Pro Person, Gruppe und Saison gibt es **höchstens eine** Zuordnung (bei Teams zusätzlich pro Rolle, siehe Team-Epic).
 5. Für **jede Gruppenart** kann optional ein **Austrittsdatum** («Ausgetreten») innerhalb der Saison erfasst werden; die Zuordnung bleibt dabei erhalten.

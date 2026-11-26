@@ -128,7 +128,6 @@ final class PersonApiTest extends TestCase
     {
         $response = $this->post('/persons', [
             'personType' => 'NATURAL',
-            'memberType' => 'PASSIVE',
             'firstName'  => 'Peter',
             'lastName'   => 'Muster',
             'email'      => 'peter@example.ch',
@@ -163,7 +162,6 @@ final class PersonApiTest extends TestCase
     {
         $guardianId = $this->post('/persons', [
             'personType' => 'NATURAL',
-            'memberType' => 'PARENT',
             'firstName'  => 'Peter',
             'lastName'   => 'Muster',
             'email'      => 'familie.muster@example.ch',
@@ -190,7 +188,6 @@ final class PersonApiTest extends TestCase
     {
         $guardianId = $this->post('/persons', [
             'personType' => 'NATURAL',
-            'memberType' => 'PARENT',
             'firstName'  => 'Peter',
             'lastName'   => 'Muster',
             'email'      => 'peter@example.ch',
@@ -211,14 +208,12 @@ final class PersonApiTest extends TestCase
 
         $response = $this->kernel->handle(Request::create('PUT', "/persons/{$id}", $this->teamMemberPayload([
             'lastName'   => 'Keller',
-            'memberType' => 'HONORARY',
             'note'       => 'Name nach Heirat geändert',
         ])));
 
         self::assertSame(200, $response->getStatus());
         $person = $response->getData()['person'];
         self::assertSame('Anna Keller', $person['displayName']);
-        self::assertSame('HONORARY', $person['memberType']);
         self::assertSame('Name nach Heirat geändert', $person['note']);
     }
 
@@ -231,7 +226,6 @@ final class PersonApiTest extends TestCase
 
         $response = $this->kernel->handle(Request::create('PUT', "/persons/{$id}", [
             'personType'       => 'LEGAL',
-            'memberType'       => 'SPONSOR',
             'name'             => 'Jensen AG',
             'contactFirstName' => 'Anna',
             'contactLastName'  => 'Muster',
@@ -273,7 +267,6 @@ final class PersonApiTest extends TestCase
     {
         $response = $this->post('/persons', [
             'personType'       => 'LEGAL',
-            'memberType'       => 'SPONSOR',
             'name'             => 'Jensen AG',
             'contactFirstName' => 'Anna',
             'contactLastName'  => 'Muster',
@@ -289,7 +282,7 @@ final class PersonApiTest extends TestCase
         $person = $response->getData()['person'];
         self::assertSame('Jensen AG', $person['displayName']);
         self::assertSame('Anna Muster', $person['contactName']);
-        self::assertSame('Sponsor', $person['memberTypeLabel']);
+        self::assertSame('Juristische Person', $person['personTypeLabel']);
         self::assertSame('Trikotsponsoring 2026–2028', $person['support']);
     }
 
@@ -301,7 +294,6 @@ final class PersonApiTest extends TestCase
     {
         $response = $this->post('/persons', [
             'personType' => 'LEGAL',
-            'memberType' => 'SPONSOR',
             'name'       => 'Jensen AG',
             'email'      => 'info@jensen.ch',
         ]);
@@ -348,7 +340,6 @@ final class PersonApiTest extends TestCase
         $this->post('/persons', $this->teamMemberPayload());
         $this->post('/persons', [
             'personType'       => 'LEGAL',
-            'memberType'       => 'SPONSOR',
             'name'             => 'Jensen AG',
             'contactFirstName' => 'Anna',
             'contactLastName'  => 'Muster',
@@ -366,17 +357,15 @@ final class PersonApiTest extends TestCase
     }
 
     /**
-     * The metadata names the member types of both person types.
+     * The metadata names the person types and the age of majority.
      */
-    public function testMetaListsMemberTypes(): void
+    public function testMetaListsPersonTypes(): void
     {
         $response = $this->kernel->handle(Request::create('GET', '/meta'));
 
         self::assertSame(200, $response->getStatus());
-        $natural = array_filter($response->getData()['memberTypes'], static fn (array $t): bool => $t['natural']);
-        $legal   = array_filter($response->getData()['memberTypes'], static fn (array $t): bool => $t['legal']);
-        self::assertCount(4, $natural);
-        self::assertCount(4, $legal);
+        self::assertSame(['NATURAL', 'LEGAL'], array_column($response->getData()['personTypes'], 'value'));
+        self::assertArrayNotHasKey('memberTypes', $response->getData());
         self::assertSame(18, $response->getData()['ageOfMajority']);
     }
 
@@ -414,7 +403,6 @@ final class PersonApiTest extends TestCase
         return array_merge([
             'personType' => 'NATURAL',
             'teamMember' => true,
-            'memberType' => 'ACTIVE',
             'firstName'  => 'Anna',
             'lastName'   => 'Muster',
             'birthDate'  => $this->yearsAgo(22),

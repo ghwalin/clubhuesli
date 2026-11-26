@@ -169,7 +169,6 @@ final class TeamMemberTest extends TestCase
     private function member(array $overrides = []): TeamMember
     {
         return TeamMember::fromArray(array_merge([
-            'memberType' => 'ACTIVE',
             'firstName'  => 'Anna',
             'lastName'   => 'Muster',
             'birthDate'  => $this->yearsAgo(22),
@@ -187,7 +186,6 @@ final class TeamMemberTest extends TestCase
     private function guardian(int $id): NaturalPerson
     {
         $guardian = NaturalPerson::fromArray([
-            'memberType' => 'PARENT',
             'firstName'  => 'Peter',
             'lastName'   => 'Muster',
             'email'      => 'familie.muster@example.ch',

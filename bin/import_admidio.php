@@ -64,20 +64,23 @@ $summary = static function (array $plan): void {
     $kinds = [];
     $members = 0;
     foreach ($plan['persons'] as $person) {
-        $kind         = $person['payload']['personType'] . '/' . $person['payload']['memberType']
+        $kind         = $person['payload']['personType']
             . (($person['payload']['teamMember'] ?? false) ? ' (Teammitglied)' : '');
         $kinds[$kind] = ($kinds[$kind] ?? 0) + 1;
         $members     += count($person['memberships']);
     }
     ksort($kinds);
     echo "Saison:       {$plan['season']['name']} ({$plan['season']['start']} bis {$plan['season']['end']})\n";
-    echo 'Gruppen:      ' . count($plan['groups']) . ' (' . implode(', ', array_keys($plan['groups'])) . ")\n";
+    echo 'Gruppen:      ' . count($plan['groups']) . ' (Standardgruppen von Chilis, siehe chilis/groups.md)' . "\n";
     echo 'Personen:     ' . count($plan['persons']) . "\n";
     foreach ($kinds as $kind => $count) {
         echo "  {$count} × {$kind}\n";
     }
     echo "Zuordnungen:  {$members}\n";
     echo 'Übersprungen: ' . count($plan['skipped']) . "\n";
+    foreach ($plan['unmapped'] as $role => $count) {
+        echo "  Admidio-Rolle «{$role}» hat keine Gruppe: {$count} aktive Mitgliedschaft(en) nicht importiert\n";
+    }
 };
 
 if ($options['plan-only']) {

@@ -22,7 +22,7 @@ Alle Attribute sind `private` (Zugriff über Getter/Setter, Validierung im Sette
 * Erziehungsberechtigte nur bei minderjährigen Teammitgliedern, nicht mit sich selbst
 * Saison: Bezeichnung eindeutig, Enddatum ≥ Startdatum, keine Überschneidung mit anderen Saisons
 * Gruppe: Bezeichnung eindeutig; Hierarchie zyklenfrei, keine Selbstzuordnung; Deaktivieren nur ohne aktive Mitgliedschaften und mit ausschliesslich inaktiven Untergruppen; kein Löschen
-* Mitgliedschaft: nur aktive Gruppen; pro Person/Gruppe/Saison (bei Teams zusätzlich Rolle) höchstens eine; Team nur mit natürlichen Personen der Mitgliederart «Aktiv» (Rolle `PLAYER`/`COACH`), sonst Rolle `MEMBER`; Shirtnummer nur bei `PLAYER`; Austrittsdatum innerhalb der Saison
+* Mitgliedschaft: nur aktive Gruppen; pro Person/Gruppe/Saison (bei Teams zusätzlich Rolle) höchstens eine; Team nur mit Teammitgliedern (natürliche Personen; Rolle `PLAYER`/`COACH`), sonst Rolle `MEMBER`; Shirtnummer nur bei `PLAYER`; Austrittsdatum innerhalb der Saison
 * Zugehörigkeit zu Obergruppen wird abgeleitet (transitiv) und nicht gespeichert
 
 ## Hinweise zum ERM

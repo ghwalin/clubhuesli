@@ -21,9 +21,6 @@ abstract class AbstractPerson
     /** @var int|null Primary key; null until the person is stored. */
     private ?int $id = null;
 
-    /** @var MemberType|null Kind of membership. */
-    private ?MemberType $memberType = null;
-
     /** @var string|null Contact e-mail address; not unique. */
     private ?string $email = null;
 
@@ -95,44 +92,6 @@ abstract class AbstractPerson
             throw new ValidationException('id', 'Ungültige Personen-Id');
         }
         $this->id = $id;
-    }
-
-    /**
-     * Returns the kind of membership.
-     *
-     * @return MemberType|null The member type, or null when not set yet.
-     */
-    public function getMemberType(): ?MemberType
-    {
-        return $this->memberType;
-    }
-
-    /**
-     * Sets the kind of membership.
-     *
-     * @param MemberType|string|null $memberType Member type or its name.
-     *
-     * @throws ValidationException When the value is unknown or does not fit the person type.
-     */
-    public function setMemberType(MemberType|string|null $memberType): void
-    {
-        if ($memberType === null || $memberType === '') {
-            throw new ValidationException('memberType', 'Bitte Mitgliederart wählen');
-        }
-        if (is_string($memberType)) {
-            $parsed = MemberType::tryFrom(strtoupper(trim($memberType)));
-            if ($parsed === null) {
-                throw new ValidationException('memberType', 'Bitte Mitgliederart wählen');
-            }
-            $memberType = $parsed;
-        }
-        if (!$memberType->appliesTo($this->getPersonType())) {
-            throw new ValidationException(
-                'memberType',
-                sprintf('Mitgliederart «%s» ist für diese Personenart nicht erlaubt', $memberType->label())
-            );
-        }
-        $this->memberType = $memberType;
     }
 
     /**
@@ -372,7 +331,6 @@ abstract class AbstractPerson
      */
     protected function fillCommonFromArray(array $data): void
     {
-        $this->setMemberType(self::readString($data, 'memberType'));
         // The country is set before the postal code so that the Swiss rule applies.
         $this->setCountry(self::readString($data, 'country'));
         $this->setEmail(self::readString($data, 'email'));
@@ -394,9 +352,6 @@ abstract class AbstractPerson
     {
         $errors = [];
 
-        if ($this->getMemberType() === null) {
-            $errors[] = ['field' => 'memberType', 'message' => 'Bitte Mitgliederart wählen'];
-        }
         if ($this->hasAddress() && !$this->hasCompleteAddress()) {
             $errors[] = [
                 'field'   => 'street',
@@ -433,8 +388,7 @@ abstract class AbstractPerson
         return [
             'id'              => $this->getId(),
             'personType'      => $this->getPersonType()->value,
-            'memberType'      => $this->getMemberType()?->value,
-            'memberTypeLabel' => $this->getMemberType()?->label(),
+            'personTypeLabel' => $this->getPersonType()->label(),
             'displayName'     => $this->getDisplayName(),
             'email'           => $this->getEmail(),
             'phone'           => $this->getPhone(),

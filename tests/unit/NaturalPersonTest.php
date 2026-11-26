@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Clubhuesli\Tests;
 
-use Clubhuesli\Model\MemberType;
 use Clubhuesli\Model\NaturalPerson;
 use Clubhuesli\Validation\ValidationException;
 use DateTimeImmutable;
@@ -23,7 +22,6 @@ final class NaturalPersonTest extends TestCase
     public function testPassiveMemberNeedsNoBirthDate(): void
     {
         $person = NaturalPerson::fromArray([
-            'memberType' => 'PASSIVE',
             'firstName'  => 'Peter',
             'lastName'   => 'Muster',
             'email'      => 'peter@example.ch',
@@ -31,7 +29,6 @@ final class NaturalPersonTest extends TestCase
 
         self::assertSame([], $person->validate());
         self::assertNull($person->getBirthDate());
-        self::assertSame(MemberType::PASSIVE, $person->getMemberType());
     }
 
     /**
@@ -167,16 +164,6 @@ final class NaturalPersonTest extends TestCase
     }
 
     /**
-     * A member type reserved for legal persons is rejected.
-     */
-    public function testMemberTypeOfLegalPersonsIsRejected(): void
-    {
-        $this->expectException(ValidationException::class);
-
-        $this->person(['memberType' => 'SPONSOR']);
-    }
-
-    /**
      * Creates a natural person with sensible defaults.
      *
      * @param array<string, mixed> $overrides Attributes to overwrite.
@@ -186,7 +173,6 @@ final class NaturalPersonTest extends TestCase
     private function person(array $overrides = []): NaturalPerson
     {
         return NaturalPerson::fromArray(array_merge([
-            'memberType' => 'PARENT',
             'firstName'  => 'Peter',
             'lastName'   => 'Muster',
             'email'      => 'peter@example.ch',

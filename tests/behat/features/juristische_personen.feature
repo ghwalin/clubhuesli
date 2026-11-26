@@ -9,19 +9,17 @@ Funktionalität: Juristische Personen verwalten
   Szenario: Szenario 1 – Juristische Person mit Kontaktperson anlegen
     Wenn ich die Person mit folgenden Daten erfasse:
       | personType       | LEGAL          |
-      | memberType       | SPONSOR        |
       | name             | Jensen AG      |
       | contactFirstName | Anna           |
       | contactLastName  | Muster         |
       | email            | info@jensen.ch |
     Dann wird die Person gespeichert
     Und erscheint "Jensen AG" in der Personenliste
-    Und ist das Feld "memberTypeLabel" auf "Sponsor" gesetzt
+    Und ist das Feld "personTypeLabel" auf "Juristische Person" gesetzt
 
   Szenario: Szenario 2 – Ohne Kontaktperson nicht speicherbar
     Wenn ich die Person mit folgenden Daten erfasse:
       | personType | LEGAL          |
-      | memberType | SPONSOR        |
       | name       | Jensen AG      |
       | email      | info@jensen.ch |
     Dann wird nicht gespeichert und ich sehe die Meldung "Bitte Vor- und Nachname der Kontaktperson erfassen"
@@ -29,14 +27,12 @@ Funktionalität: Juristische Personen verwalten
   Szenario: Szenario 3 – Kontaktperson ändern
     Angenommen die Person ist erfasst:
       | personType       | LEGAL          |
-      | memberType       | SPONSOR        |
       | name             | Jensen AG      |
       | contactFirstName | Anna           |
       | contactLastName  | Muster         |
       | email            | info@jensen.ch |
     Wenn ich bei "Jensen AG" folgende Daten speichere:
       | personType       | LEGAL          |
-      | memberType       | SPONSOR        |
       | name             | Jensen AG      |
       | contactFirstName | Beat           |
       | contactLastName  | Keller         |
@@ -47,14 +43,12 @@ Funktionalität: Juristische Personen verwalten
   Szenario: Szenario 4 – Juristische Person bearbeiten
     Angenommen die Person ist erfasst:
       | personType       | LEGAL          |
-      | memberType       | SPONSOR        |
       | name             | Jensen AG      |
       | contactFirstName | Anna           |
       | contactLastName  | Muster         |
       | email            | info@jensen.ch |
     Wenn ich bei "Jensen AG" folgende Daten speichere:
       | personType       | LEGAL          |
-      | memberType       | PARTNER        |
       | name             | Jensen Sport AG |
       | contactFirstName | Anna           |
       | contactLastName  | Muster         |
@@ -63,13 +57,11 @@ Funktionalität: Juristische Personen verwalten
       | zip              | 8000           |
       | city             | Zürich         |
     Dann wird die Person gespeichert
-    Und ist das Feld "memberTypeLabel" auf "Partner" gesetzt
     Und erscheint "Jensen Sport AG" in der Personenliste
 
   Szenario: Szenario 7 – Juristische Person löschen
     Angenommen die Person ist erfasst:
       | personType       | LEGAL          |
-      | memberType       | SPONSOR        |
       | name             | Jensen AG      |
       | contactFirstName | Anna           |
       | contactLastName  | Muster         |
@@ -80,7 +72,6 @@ Funktionalität: Juristische Personen verwalten
   Szenario: Szenario 8 – Unterstützung und Notiz erfassen
     Wenn ich die Person mit folgenden Daten erfasse:
       | personType       | LEGAL                      |
-      | memberType       | SPONSOR                    |
       | name             | Jensen AG                  |
       | contactFirstName | Anna                       |
       | contactLastName  | Muster                     |
@@ -91,12 +82,3 @@ Funktionalität: Juristische Personen verwalten
     Und ist das Feld "support" auf "Trikotsponsoring 2026–2028" gesetzt
     Und ist das Feld "note" auf "Kontakt über die GL" gesetzt
 
-  Szenario: Mitgliederart für natürliche Personen ist nicht erlaubt
-    Wenn ich die Person mit folgenden Daten erfasse:
-      | personType       | LEGAL          |
-      | memberType       | ACTIVE         |
-      | name             | Jensen AG      |
-      | contactFirstName | Anna           |
-      | contactLastName  | Muster         |
-      | email            | info@jensen.ch |
-    Dann wird die Anfrage abgewiesen

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Clubhuesli\Tests;
 
 use Clubhuesli\Model\LegalPerson;
-use Clubhuesli\Model\MemberType;
 use Clubhuesli\Model\PersonType;
 use Clubhuesli\Validation\ValidationException;
 use PHPUnit\Framework\TestCase;
@@ -27,7 +26,6 @@ final class LegalPersonTest extends TestCase
         self::assertSame('Jensen AG', $person->getDisplayName());
         self::assertSame('Anna Muster', $person->getContactName());
         self::assertSame(PersonType::LEGAL, $person->getPersonType());
-        self::assertSame(MemberType::SPONSOR, $person->getMemberType());
     }
 
     /**
@@ -90,16 +88,6 @@ final class LegalPersonTest extends TestCase
     }
 
     /**
-     * A member type reserved for natural persons is rejected.
-     */
-    public function testMemberTypeOfNaturalPersonsIsRejected(): void
-    {
-        $this->expectException(ValidationException::class);
-
-        $this->legalPerson(['memberType' => 'ACTIVE']);
-    }
-
-    /**
      * Scenario 3 of «Adressen verwalten»: the postal address is stored; the
      * e-mail address is mandatory for legal persons.
      */
@@ -130,7 +118,6 @@ final class LegalPersonTest extends TestCase
     private function legalPerson(array $overrides = []): LegalPerson
     {
         return LegalPerson::fromArray(array_merge([
-            'memberType'       => 'SPONSOR',
             'name'             => 'Jensen AG',
             'contactFirstName' => 'Anna',
             'contactLastName'  => 'Muster',

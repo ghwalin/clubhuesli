@@ -8,7 +8,6 @@ Funktionalität: Gruppenzuordnungen verwalten
     Und die aktuelle Saison "Aktuell" ist erfasst
     Und die Person ist erfasst:
       | personType | NATURAL          |
-      | memberType | ACTIVE           |
       | teamMember | true             |
       | firstName  | Anna             |
       | lastName   | Muster           |
@@ -16,7 +15,6 @@ Funktionalität: Gruppenzuordnungen verwalten
       | email      | anna@muster.ch   |
     Und die Person ist erfasst:
       | personType       | LEGAL          |
-      | memberType       | SPONSOR        |
       | name             | Jensen AG      |
       | contactFirstName | Beat           |
       | contactLastName  | Keller         |
