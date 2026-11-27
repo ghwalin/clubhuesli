@@ -200,6 +200,7 @@ final class MembershipReader
                 'groupType'   => $group?->getGroupType()?->value,
                 'seasonName'  => $season?->getName(),
                 'seasonStart' => $season?->getStartDate()?->format('Y-m-d'),
+                'seasonEnd'   => $season?->getEndDate()?->format('Y-m-d'),
             ];
         }
 

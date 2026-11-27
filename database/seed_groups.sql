@@ -3,7 +3,7 @@
 -- Existing groups (by name) are kept; the hierarchy is only extended.
 -- The Admidio import (bin/import_admidio.php) creates the same structure.
 SET NAMES utf8mb4;
-
+USE clubhuesli;
 -- Teams
 INSERT IGNORE INTO club_group (name, group_type) VALUES
     ('NLB', 'TEAM'), ('1. Liga KF', 'TEAM'), ('U21B', 'TEAM'), ('U17B', 'TEAM'),

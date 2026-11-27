@@ -560,6 +560,44 @@ final class GroupApiTest extends TestCase
     }
 
     /**
+     * A membership can be ended and taken up again; role and function stay.
+     */
+    public function testEndAndReactivateMembership(): void
+    {
+        $team = $this->createGroup('U18', 'TEAM');
+        $anna = $this->createTeamMember('Anna', 'Muster');
+        $id   = $this->assign($team, $anna, $this->currentSeason, ['role' => 'COACH', 'function' => 'Head']);
+
+        $ended = $this->send('PUT', "/memberships/{$id}", ['exitDate' => (new DateTimeImmutable('+5 days'))->format('Y-m-d')]);
+        self::assertSame(200, $ended->getStatus());
+        $listed = $this->send('GET', "/persons/{$anna}/memberships")->getData()['memberships'][0];
+        self::assertNotNull($listed['exitDate']);
+
+        $active = $this->send('PUT', "/memberships/{$id}", ['exitDate' => null]);
+        self::assertSame(200, $active->getStatus());
+        $membership = $active->getData()['membership'];
+        self::assertNull($membership['exitDate']);
+        self::assertSame('COACH', $membership['role']);
+        self::assertSame('Head', $membership['function']);
+    }
+
+    /**
+     * The memberships of a person carry the start and end of the season, which the
+     * «from / to» column of the person form shows.
+     */
+    public function testMembershipsOfPersonCarrySeasonPeriod(): void
+    {
+        $group = $this->createGroup('Helfer', 'OTHER');
+        $anna  = $this->createNaturalPerson('Anna', 'Muster');
+        $this->assign($group, $anna, $this->currentSeason);
+
+        $row = $this->send('GET', "/persons/{$anna}/memberships")->getData()['memberships'][0];
+
+        self::assertSame((new DateTimeImmutable('-100 days'))->format('Y-m-d'), $row['seasonStart']);
+        self::assertSame((new DateTimeImmutable('+200 days'))->format('Y-m-d'), $row['seasonEnd']);
+    }
+
+    /**
      * A legal person can leave a group as well.
      */
     public function testLegalPersonCanHaveExitDate(): void

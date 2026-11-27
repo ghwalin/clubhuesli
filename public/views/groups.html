@@ -3,15 +3,7 @@
         <h1>Gruppen</h1>
     </header>
 
-    <form id="group-filter" class="toolbar" novalidate>
-        <div class="field field--inline">
-            <label for="filter-group-type">Gruppenart</label>
-            <select id="filter-group-type" name="groupType"></select>
-        </div>
-        <div class="field field--inline">
-            <label for="filter-group-status">Status</label>
-            <select id="filter-group-status" name="status"></select>
-        </div>
+    <div class="toolbar">
         <div class="field field--inline">
             <label for="group-view">Ansicht</label>
             <select id="group-view">
@@ -19,11 +11,34 @@
                 <option value="tree">Baum</option>
             </select>
         </div>
-        <button type="submit" class="button">Filtern</button>
-    </form>
+    </div>
 
     <p class="form-error" id="group-list-error" hidden></p>
-    <div id="group-list"></div>
+
+    <table class="table" id="group-table">
+        <thead>
+            <tr>
+                <th><button type="button" class="table__sort" data-sort="name">Bezeichnung</button></th>
+                <th><button type="button" class="table__sort" data-sort="groupTypeLabel">Gruppenart</button></th>
+                <th><button type="button" class="table__sort" data-sort="status">Status</button></th>
+                <th><button type="button" class="table__sort" data-sort="parentNames">Obergruppen</button></th>
+                <th><button type="button" class="table__sort" data-sort="childNames">Untergruppen</button></th>
+                <th class="table__actions">Aktionen</th>
+            </tr>
+            <tr class="table__filters">
+                <th data-label="Bezeichnung"><input type="search" data-filter="name" placeholder="Filtern" aria-label="Bezeichnung filtern"></th>
+                <th data-label="Gruppenart"><select data-filter="groupType" id="filter-group-type" aria-label="Gruppenart filtern"></select></th>
+                <th data-label="Status"><select data-filter="status" id="filter-group-status" aria-label="Status filtern"></select></th>
+                <th data-label="Obergruppen"><input type="search" data-filter="parentNames" placeholder="Filtern" aria-label="Obergruppen filtern"></th>
+                <th data-label="Untergruppen"><input type="search" data-filter="childNames" placeholder="Filtern" aria-label="Untergruppen filtern"></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="group-rows"></tbody>
+    </table>
+    <div id="group-tree" hidden></div>
+
+    <p class="hint" id="group-count"></p>
 </section>
 
 <section class="card">

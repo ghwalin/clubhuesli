@@ -318,7 +318,7 @@ async function ensureMeta() {
 /**
  * Shows the form for a new or an existing person.
  *
- * @param {{personType: string, id: number|null}} target Person type and id of the person.
+ * @param {{personType: string, id: number|null, tab?: string}} target Person type, id of the person and the tab to focus.
  * @returns {Promise<void>}
  */
 async function renderPersonForm(target) {
@@ -335,15 +335,19 @@ async function renderPersonForm(target) {
         }
     }
 
-    const personType = person ? person.personType : target.personType;
+    let personType = person ? person.personType : target.personType;
     const form = document.getElementById('person-form');
     const teamMemberBox = document.getElementById('teamMember');
     const birthDateInput = document.getElementById('birthDate');
     const guardiansSelect = document.getElementById('guardians');
 
-    document.getElementById('form-title').textContent = person
-        ? `${person.displayName} bearbeiten`
-        : (personType === 'LEGAL' ? 'Neue juristische Person' : 'Neue natürliche Person');
+    const typeSelect = document.getElementById('personType');
+    typeSelect.value = personType;
+    typeSelect.disabled = person !== null;
+    typeSelect.addEventListener('change', () => {
+        personType = typeSelect.value;
+        updateSections();
+    });
 
     await fillGuardianOptions(person);
 
@@ -362,6 +366,11 @@ async function renderPersonForm(target) {
      */
     function updateSections() {
         const isNatural = personType === 'NATURAL';
+        document.getElementById('form-title').textContent = person
+            ? `${person.displayName} bearbeiten`
+            : 'Neue Person';
+        document.querySelector('[data-label="firstName"]').textContent = isNatural ? 'Vorname' : 'Vorname Kontaktperson';
+        document.querySelector('[data-label="lastName"]').textContent = isNatural ? 'Nachname' : 'Nachname Kontaktperson';
         const isTeamMember = isNatural && teamMemberBox.checked;
         const age = ageFromBirthDate(birthDateInput.value);
         const isMinor = age !== null && age < ageOfMajority;
@@ -405,6 +414,7 @@ async function renderPersonForm(target) {
     if (person) {
         await renderPersonGroups(viewContext, person);
     }
+    setUpTabs(person !== null, target.tab === 'groups' ? 'groups' : 'personal');
 
     /**
      * Collects the form, sends it to the API and shows the errors of the
@@ -423,7 +433,7 @@ async function renderPersonForm(target) {
                 : await api.createPerson(payload);
             navigate(`#/persons/${saved.id}`, true);
             setMessage('form-error', null);
-            await renderPersonForm({ personType, id: saved.id });
+            await renderPersonForm({ personType, id: saved.id, tab: person ? 'personal' : 'groups' });
             showToast('Gespeichert.');
         } catch (error) {
             if (!(error instanceof ApiError)) {
@@ -439,6 +449,41 @@ async function renderPersonForm(target) {
             });
         }
     }
+}
+
+/**
+ * Wires the tabs «Personalien» and «Gruppen» of the person form. A person that
+ * is not stored yet has no group assignments, so the tabs are hidden for it.
+ *
+ * @param {boolean} stored Whether the person is stored.
+ * @param {string} initial Name of the tab to focus.
+ */
+function setUpTabs(stored, initial) {
+    const tabs = Array.from(document.querySelectorAll('#person-tabs [data-tab]'));
+    document.getElementById('person-tabs').hidden = !stored;
+
+    /**
+     * Selects a tab and shows its panel only.
+     *
+     * @param {string} name Name of the tab.
+     * @param {boolean} focus Whether the tab button receives the focus.
+     */
+    const select = (name, focus) => {
+        tabs.forEach((tab) => {
+            const active = tab.dataset.tab === name;
+            tab.setAttribute('aria-selected', String(active));
+            tab.tabIndex = active ? 0 : -1;
+            if (active && focus) {
+                tab.focus();
+            }
+        });
+        document.querySelectorAll('[data-panel]').forEach((panel) => {
+            panel.hidden = panel.dataset.panel !== name;
+        });
+    };
+
+    tabs.forEach((tab) => tab.addEventListener('click', () => select(tab.dataset.tab, false)));
+    select(stored ? initial : 'personal', stored && initial === 'groups');
 }
 
 /**
@@ -497,12 +542,10 @@ async function fillGuardianOptions(person) {
  */
 function fillForm(person) {
     const values = {
-        firstName: person.firstName ?? '',
-        lastName: person.lastName ?? '',
+        firstName: person.firstName ?? person.contactFirstName ?? '',
+        lastName: person.lastName ?? person.contactLastName ?? '',
         birthDate: person.birthDate ?? '',
         name: person.name ?? '',
-        contactFirstName: person.contactFirstName ?? '',
-        contactLastName: person.contactLastName ?? '',
         support: person.support ?? '',
         ahvNumber: person.ahvNumber ?? '',
         jsNumber: person.jsNumber ?? '',
@@ -563,8 +606,8 @@ function collectForm(personType) {
 
     if (personType === 'LEGAL') {
         payload.name = value('name');
-        payload.contactFirstName = value('contactFirstName');
-        payload.contactLastName = value('contactLastName');
+        payload.contactFirstName = value('firstName');
+        payload.contactLastName = value('lastName');
         payload.support = document.getElementById('support').value.trim();
 
         return payload;
