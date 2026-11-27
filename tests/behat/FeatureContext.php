@@ -596,16 +596,51 @@ final class FeatureContext implements Context
      * @param string $person Display name of the person.
      * @param string $group  Name of the group.
      * @param string $season Name of the season.
-     * @param string $date   Exit date.
+     * @param string $date   Exit date (`YYYY-MM-DD` or «heute»).
      */
-    #[When('/^ich bei "([^"]*)" in der Gruppe "([^"]*)" und der Saison "([^"]*)" das Austrittsdatum ([\d-]+) erfasse$/')]
+    #[When('/^ich bei "([^"]*)" in der Gruppe "([^"]*)" und der Saison "([^"]*)" das Austrittsdatum ([\d-]+|heute) erfasse$/')]
     public function iRecordTheExit(string $person, string $group, string $season, string $date): void
     {
         $this->response = $this->kernel->handle(Request::create(
             'PUT',
             '/memberships/' . $this->membershipId($person, $group, $season),
-            ['exitDate' => $date]
+            ['exitDate' => $date === 'heute' ? date('Y-m-d') : $date]
         ));
+    }
+
+    /**
+     * Reactivates an ended membership by removing its exit date.
+     *
+     * @param string $person Display name of the person.
+     * @param string $group  Name of the group.
+     * @param string $season Name of the season.
+     */
+    #[When('/^ich die Zuordnung von "([^"]*)" zur Gruppe "([^"]*)" in der Saison "([^"]*)" wieder aufnehme$/')]
+    public function iReactivateTheMembership(string $person, string $group, string $season): void
+    {
+        $this->response = $this->kernel->handle(Request::create(
+            'PUT',
+            '/memberships/' . $this->membershipId($person, $group, $season),
+            ['exitDate' => null]
+        ));
+    }
+
+    /**
+     * Checks whether a membership is ended (exit date set) or active.
+     *
+     * @param string $person Display name of the person.
+     * @param string $group  Name of the group.
+     * @param string $season Name of the season.
+     * @param string $state  «beendet» or «aktiv».
+     */
+    #[Then('/^ist die Zuordnung von "([^"]*)" zur Gruppe "([^"]*)" in der Saison "([^"]*)" (beendet|aktiv)$/')]
+    public function theMembershipIs(string $person, string $group, string $season, string $state): void
+    {
+        $membership = $this->membershipDao->find($this->membershipId($person, $group, $season));
+        $actual     = $membership?->getExitDate() === null ? 'aktiv' : 'beendet';
+        if ($actual !== $state) {
+            throw new RuntimeException("Die Zuordnung ist {$actual}, erwartet {$state}");
+        }
     }
 
     /**

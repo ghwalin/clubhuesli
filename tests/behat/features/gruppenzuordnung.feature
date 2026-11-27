@@ -70,3 +70,12 @@ Funktionalität: Gruppenzuordnungen verwalten
     Wenn ich die Zuordnung von "Anna Muster" zur Gruppe "Geschäftsführerin" in der Saison "Aktuell" lösche und die Warnung bestätige
     Dann wird gespeichert
     Und ist "Anna Muster" in der Saison "Aktuell" nicht Mitglied der Gruppe "Funktionärin"
+
+  Szenario: Zuordnung beenden und wieder aufnehmen
+    Angenommen die Gruppe "Funktionäre" der Art FUNCTIONARY ist erfasst
+    Und "Anna Muster" ist in der Saison "Aktuell" der Gruppe "Funktionäre" zugeordnet
+    Wenn ich bei "Anna Muster" in der Gruppe "Funktionäre" und der Saison "Aktuell" das Austrittsdatum heute erfasse
+    Dann ist die Zuordnung von "Anna Muster" zur Gruppe "Funktionäre" in der Saison "Aktuell" beendet
+    Wenn ich die Zuordnung von "Anna Muster" zur Gruppe "Funktionäre" in der Saison "Aktuell" wieder aufnehme
+    Dann wird gespeichert
+    Und ist die Zuordnung von "Anna Muster" zur Gruppe "Funktionäre" in der Saison "Aktuell" aktiv

@@ -87,8 +87,13 @@ a {
 
 .footer {
     padding: 1rem 1.5rem;
-    color: var(--color-muted);
+    background: var(--color-primary);
+    color: #fff;
     font-size: 0.85rem;
+}
+
+.footer p {
+    margin: 0;
 }
 
 .card {
@@ -135,6 +140,36 @@ legend {
     padding: 0 0.4rem;
     font-weight: 600;
     color: var(--color-muted);
+}
+
+.fieldset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    gap: 0 var(--space);
+    align-items: start;
+}
+
+fieldset > .field,
+fieldset > .field-row {
+    margin-bottom: var(--space);
+}
+
+.field-row {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.field--grow {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.field--narrow {
+    flex: 0 0 6.5rem;
+}
+
+[hidden] {
+    display: none !important;
 }
 
 .grid {
@@ -388,44 +423,52 @@ textarea:focus {
     }
 
     /* The person list keeps its sort buttons and filters: they are shown as a panel above the cards. */
-    #person-table thead {
+    #person-table thead,
+    #group-table thead {
         display: block;
         margin-bottom: var(--space);
     }
 
-    #person-table thead tr {
+    #person-table thead tr,
+    #group-table thead tr {
         display: flex;
         flex-wrap: wrap;
         gap: 0.5rem;
         padding: 0.25rem 0;
     }
 
-    #person-table thead th {
+    #person-table thead th,
+    #group-table thead th {
         display: block;
         padding: 0;
         border: 0;
     }
 
-    #person-table thead .table__actions {
+    #person-table thead .table__actions,
+    #group-table thead .table__actions {
         display: none;
     }
 
-    #person-table .table__sort {
+    #person-table .table__sort,
+    #group-table .table__sort {
         padding: 0.35rem 0.7rem;
         border: 1px solid var(--color-border);
         border-radius: var(--radius);
         background: var(--color-surface);
     }
 
-    #person-table .table__filters th {
+    #person-table .table__filters th,
+    #group-table .table__filters th {
         flex: 1 1 45%;
     }
 
-    #person-table .table__filters th:empty {
+    #person-table .table__filters th:empty,
+    #group-table .table__filters th:empty {
         display: none;
     }
 
-    #person-table .table__filters th::before {
+    #person-table .table__filters th::before,
+    #group-table .table__filters th::before {
         content: attr(data-label);
         display: block;
         font-size: 0.75rem;
@@ -489,4 +532,33 @@ textarea:focus {
     width: 100%;
     min-width: 6rem;
     font-size: 0.85rem;
+}
+
+/* --- Tabs ----------------------------------------------------------------- */
+
+.tabs {
+    display: flex;
+    gap: 0.25rem;
+    margin-bottom: var(--space);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.tabs__tab {
+    border: 1px solid transparent;
+    border-bottom: 0;
+    border-radius: var(--radius) var(--radius) 0 0;
+    background: none;
+    padding: 0.5rem 1rem;
+    margin-bottom: -1px;
+    font: inherit;
+    font-weight: 600;
+    color: var(--color-muted);
+    cursor: pointer;
+}
+
+.tabs__tab[aria-selected="true"] {
+    border-color: var(--color-border);
+    background: var(--color-surface, #fff);
+    color: inherit;
+    border-bottom: 1px solid var(--color-surface, #fff);
 }

@@ -154,7 +154,6 @@ export async function renderSeasons(ctx) {
                         <td>${ctx.formatDate(season.endDate)}</td>
                         <td class="table__actions">
                             <button type="button" class="button button--small" data-edit="${season.id}">Bearbeiten</button>
-                            <button type="button" class="button button--small button--danger" data-delete="${season.id}">Löschen</button>
                         </td>
                     </tr>`).join('');
 
@@ -167,18 +166,6 @@ export async function renderSeasons(ctx) {
                 document.getElementById('season-form-title').textContent = `${season.name} bearbeiten`;
                 cancel.hidden = false;
                 clearErrors();
-            }));
-            rows.querySelectorAll('[data-delete]').forEach((button) => button.addEventListener('click', () => {
-                const season = seasons.find((item) => item.id === Number(button.dataset.delete));
-                confirmInline(button.closest('table'), `Saison <strong>${ctx.escapeHtml(season.name)}</strong> wirklich löschen?`, 'Ja, löschen', async () => {
-                    try {
-                        await api.deleteSeason(season.id);
-                        ctx.showToast('Saison gelöscht.');
-                        await refresh();
-                    } catch (error) {
-                        ctx.setMessage('season-error', error instanceof ApiError ? error.message : 'Löschen fehlgeschlagen');
-                    }
-                });
             }));
         } catch (error) {
             rows.innerHTML = '';
@@ -233,6 +220,72 @@ export async function renderGroupList(ctx) {
     document.getElementById('new-group-type').innerHTML =
         `<option value="">Bitte wählen</option>${options(meta.groupTypes, null, ctx)}`;
 
+    const table = document.getElementById('group-table');
+    /** @type {Array<object>} All groups, loaded once; sorting and filtering happen in the browser. */
+    let groups = [];
+    /** @type {{key: string, direction: 'asc'|'desc'}} Current sort order. */
+    let sort = { key: 'name', direction: 'asc' };
+    const collator = new Intl.Collator('de-CH', { sensitivity: 'base', numeric: true });
+
+    /** Applies filters and sort order and renders the table or the tree. */
+    function renderList() {
+        const isTree = document.getElementById('group-view').value === 'tree';
+        table.hidden = isTree;
+        document.getElementById('group-tree').hidden = !isTree;
+        if (isTree) {
+            document.getElementById('group-tree').innerHTML = groupTree(groups, {}, ctx);
+            document.getElementById('group-count').textContent = '';
+            return;
+        }
+
+        const filters = {};
+        table.querySelectorAll('[data-filter]').forEach((input) => {
+            filters[input.dataset.filter] = input.value.trim().toLowerCase();
+        });
+        const visible = groups.filter((group) => Object.entries(filters).every(([key, needle]) => {
+            if (needle === '') {
+                return true;
+            }
+            const value = String(group[key] ?? '').toLowerCase();
+            return key === 'groupType' || key === 'status' ? value === needle : value.includes(needle);
+        }));
+        const factor = sort.direction === 'asc' ? 1 : -1;
+        visible.sort((a, b) => factor * collator.compare(String(a[sort.key] ?? ''), String(b[sort.key] ?? '')));
+
+        document.getElementById('group-rows').innerHTML = visible.length === 0
+            ? '<tr><td colspan="6" class="hint">Keine Gruppen gefunden.</td></tr>'
+            : visible.map((group) => `
+            <tr>
+                <td><a href="#/groups/${group.id}">${ctx.escapeHtml(group.name)}</a></td>
+                <td>${ctx.escapeHtml(group.groupTypeLabel)}</td>
+                <td>${group.status === 'ACTIVE' ? 'aktiv' : '<span class="badge badge--minor">inaktiv</span>'}</td>
+                <td>${ctx.escapeHtml(group.parentNames || '–')}</td>
+                <td>${ctx.escapeHtml(group.childNames || '–')}</td>
+                <td class="table__actions"><a class="button button--small" href="#/groups/${group.id}">Öffnen</a></td>
+            </tr>`).join('');
+        document.getElementById('group-count').textContent = visible.length === groups.length
+            ? `${groups.length} ${groups.length === 1 ? 'Gruppe' : 'Gruppen'}`
+            : `${visible.length} von ${groups.length} Gruppen`;
+
+        table.querySelectorAll('[data-sort]').forEach((button) => {
+            if (button.dataset.sort === sort.key) {
+                button.dataset.direction = sort.direction;
+            } else {
+                delete button.dataset.direction;
+            }
+        });
+    }
+
+    table.querySelectorAll('[data-sort]').forEach((button) => button.addEventListener('click', () => {
+        const key = button.dataset.sort;
+        sort = { key, direction: sort.key === key && sort.direction === 'asc' ? 'desc' : 'asc' };
+        renderList();
+    }));
+    table.querySelectorAll('[data-filter]').forEach((input) => {
+        input.addEventListener(input.tagName === 'SELECT' ? 'change' : 'input', renderList);
+    });
+    document.getElementById('group-view').addEventListener('change', renderList);
+
     /**
      * Loads the groups and renders them in the chosen view.
      *
@@ -240,27 +293,21 @@ export async function renderGroupList(ctx) {
      */
     async function refresh() {
         ctx.setMessage('group-list-error', null);
-        const target = document.getElementById('group-list');
         try {
-            const filter = {
-                groupType: document.getElementById('filter-group-type').value,
-                status: document.getElementById('filter-group-status').value,
-            };
-            const view = document.getElementById('group-view').value;
-            // The tree needs all groups to follow the links; the filter only applies to the list.
-            const groups = await api.groups(view === 'tree' ? {} : filter);
-            target.innerHTML = view === 'tree' ? groupTree(groups, filter, ctx) : groupTable(groups, ctx);
+            const all = await api.groups();
+            const byId = new Map(all.map((group) => [group.id, group.name]));
+            const names = (ids) => ids.map((id) => byId.get(id)).filter(Boolean).join(', ');
+            groups = all.map((group) => ({
+                ...group,
+                parentNames: names(group.parentIds),
+                childNames: names(group.childIds),
+            }));
+            renderList();
         } catch (error) {
-            target.innerHTML = '';
+            document.getElementById('group-rows').innerHTML = '';
             ctx.setMessage('group-list-error', error instanceof ApiError ? error.message : 'Gruppen konnten nicht geladen werden');
         }
     }
-
-    document.getElementById('group-filter').addEventListener('submit', (event) => {
-        event.preventDefault();
-        void refresh();
-    });
-    document.getElementById('group-view').addEventListener('change', () => void refresh());
 
     document.getElementById('group-create-form').addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -278,34 +325,6 @@ export async function renderGroupList(ctx) {
     });
 
     await refresh();
-}
-
-/**
- * Renders the group table.
- *
- * @param {Array<object>} groups The groups.
- * @param {Context} ctx Application helpers.
- * @returns {string} The HTML.
- */
-function groupTable(groups, ctx) {
-    if (groups.length === 0) {
-        return '<p class="hint">Keine Gruppen gefunden.</p>';
-    }
-    const byId = new Map(groups.map((group) => [group.id, group]));
-    const names = (ids) => ids.map((id) => byId.get(id)?.name).filter(Boolean).map(ctx.escapeHtml).join(', ') || '–';
-
-    return `<table class="table">
-        <thead><tr><th>Bezeichnung</th><th>Gruppenart</th><th>Status</th><th>Obergruppen</th><th>Untergruppen</th><th class="table__actions">Aktionen</th></tr></thead>
-        <tbody>${groups.map((group) => `
-            <tr>
-                <td><a href="#/groups/${group.id}">${ctx.escapeHtml(group.name)}</a></td>
-                <td>${ctx.escapeHtml(group.groupTypeLabel)}</td>
-                <td>${group.status === 'ACTIVE' ? 'aktiv' : '<span class="badge badge--minor">inaktiv</span>'}</td>
-                <td>${names(group.parentIds)}</td>
-                <td>${names(group.childIds)}</td>
-                <td class="table__actions"><a class="button button--small" href="#/groups/${group.id}">Öffnen</a></td>
-            </tr>`).join('')}
-        </tbody></table>`;
 }
 
 /**
@@ -427,8 +446,9 @@ export async function renderGroupDetail(ctx, id) {
             .filter((group) => group.id !== state.group.id && group.status === 'ACTIVE')
             .map((group) => ({ value: group.id, label: group.name }));
         const free = (taken) => candidates.filter((candidate) => !taken.includes(candidate.value));
-        document.getElementById('parent-select').innerHTML = options(free(state.group.parentIds), null, ctx);
-        document.getElementById('child-select').innerHTML = options(free(state.group.childIds), null, ctx);
+        const placeholder = '<option value="" selected>--- auswählen ---</option>';
+        document.getElementById('parent-select').innerHTML = placeholder + options(free(state.group.parentIds), null, ctx);
+        document.getElementById('child-select').innerHTML = placeholder + options(free(state.group.childIds), null, ctx);
 
         parentList.querySelectorAll('[data-remove-parent]').forEach((button) => button.addEventListener('click', () =>
             changeLink(() => api.removeChildGroup(Number(button.dataset.removeParent), id))));
@@ -456,15 +476,19 @@ export async function renderGroupDetail(ctx, id) {
 
     document.getElementById('parent-add').addEventListener('click', () => {
         const parentId = Number(document.getElementById('parent-select').value);
-        if (parentId) {
-            void changeLink(() => api.addChildGroup(parentId, id));
+        if (!parentId) {
+            ctx.setMessage('link-error', 'Bitte eine Obergruppe auswählen');
+            return;
         }
+        void changeLink(() => api.addChildGroup(parentId, id));
     });
     document.getElementById('child-add').addEventListener('click', () => {
         const childId = Number(document.getElementById('child-select').value);
-        if (childId) {
-            void changeLink(() => api.addChildGroup(id, childId));
+        if (!childId) {
+            ctx.setMessage('link-error', 'Bitte eine Untergruppe auswählen');
+            return;
         }
+        void changeLink(() => api.addChildGroup(id, childId));
     });
 
     /* ---------------------------- members ---------------------------- */
@@ -536,6 +560,12 @@ export async function renderGroupDetail(ctx, id) {
     const assignForm = document.getElementById('assign-form');
     const membershipField = document.getElementById('assign-membership-id');
     const roleSelect = document.getElementById('assign-role');
+    /** @type {Map<string, string>} Label shown in the person filter and the id of the person. */
+    const personLabels = new Map();
+
+    document.getElementById('assign-person-search').addEventListener('input', (event) => {
+        document.getElementById('assign-person').value = personLabels.get(event.target.value) ?? '';
+    });
 
     /** Shows the fields that depend on the group type and the role. */
     function updateAssignForm() {
@@ -543,12 +573,22 @@ export async function renderGroupDetail(ctx, id) {
         document.getElementById('assign-role-field').hidden = !team;
         document.getElementById('assign-shirt-field').hidden = !(team && roleSelect.value === 'PLAYER');
 
-        const wasSelected = document.getElementById('assign-person').value;
+        const personSearch = document.getElementById('assign-person-search');
+        const personId = document.getElementById('assign-person');
         const persons = state.persons.filter((person) =>
             !team || (person.personType === 'NATURAL' && person.teamMember));
-        document.getElementById('assign-person').innerHTML =
-            options(persons.map((person) => ({ value: person.id, label: person.displayName })), wasSelected, ctx);
-        document.getElementById('assign-person').disabled = membershipField.value !== '';
+        personLabels.clear();
+        persons.forEach((person) => {
+            const base = person.email ? `${person.displayName} – ${person.email}` : person.displayName;
+            personLabels.set(personLabels.has(base) ? `${base} (#${person.id})` : base, String(person.id));
+        });
+        document.getElementById('assign-person-list').innerHTML =
+            Array.from(personLabels.keys()).map((label) => `<option value="${ctx.escapeHtml(label)}"></option>`).join('');
+        if (membershipField.value === '') {
+            // The group type may have changed: forget a person that is no longer offered.
+            personId.value = personLabels.get(personSearch.value) ?? '';
+        }
+        personSearch.disabled = membershipField.value !== '';
         document.getElementById('assign-card').hidden = state.group.status !== 'ACTIVE' && membershipField.value === '';
     }
     roleSelect.innerHTML = options(meta.membershipRoles.filter((role) => role.value !== 'MEMBER'), 'PLAYER', ctx);
@@ -577,7 +617,8 @@ export async function renderGroupDetail(ctx, id) {
         document.getElementById('assign-title').textContent = `Zuordnung von ${member.displayName} korrigieren`;
         document.getElementById('assign-save').textContent = 'Speichern';
         document.getElementById('assign-cancel').hidden = false;
-        document.getElementById('assign-person').innerHTML = options([{ value: member.personId, label: member.displayName }], member.personId, ctx);
+        document.getElementById('assign-person').value = member.personId;
+        document.getElementById('assign-person-search').value = member.displayName;
         document.getElementById('assign-season').value = seasonSelect.value;
         roleSelect.value = member.role === 'COACH' ? 'COACH' : 'PLAYER';
         document.getElementById('assign-function').value = member.function ?? '';
@@ -602,6 +643,11 @@ export async function renderGroupDetail(ctx, id) {
         if (team) {
             body.role = roleSelect.value;
             body.shirtNumber = roleSelect.value === 'PLAYER' ? (document.getElementById('assign-shirt').value || null) : null;
+        }
+        if (!membershipField.value && !document.getElementById('assign-person').value) {
+            const element = document.querySelector('[data-error-for="personId"]');
+            element.textContent = 'Bitte eine Person aus der Liste auswählen';
+            return;
         }
         try {
             if (membershipField.value) {
@@ -674,7 +720,7 @@ export async function renderPersonGroups(ctx, person) {
     const meta = await ensureGroupMeta();
     const host = document.createElement('div');
     host.innerHTML = await (await fetch(new URL('views/person-groups.html', document.baseURI), { cache: 'no-cache' })).text();
-    document.getElementById('app').appendChild(host);
+    (document.getElementById('panel-groups') ?? document.getElementById('app')).appendChild(host);
 
     const [groups, seasons] = await Promise.all([api.groups({ status: 'ACTIVE' }), api.seasons()]);
     const eligible = (group) => group.groupType !== 'TEAM'
@@ -704,33 +750,108 @@ export async function renderPersonGroups(ctx, person) {
      */
     function render(data) {
         const rows = document.getElementById('person-group-rows');
-        const direct = data.memberships.map((membership) => `<tr>
+        const today = new Date().toISOString().slice(0, 10);
+        const period = (start, end) => `${start ? ctx.formatDate(start) : '–'} – ${end ? ctx.formatDate(end) : ''}`;
+        const direct = data.memberships.map((membership) => {
+            const id = membership.id;
+            const actions = membership.exitDate
+                ? `<button type="button" class="button button--small" data-reactivate="${id}">Wieder aufnehmen</button>
+                   <button type="button" class="button button--small button--danger" data-delete="${id}">Löschen</button>`
+                : `<button type="button" class="button button--small" data-edit="${id}">Bearbeiten</button>
+                   <button type="button" class="button button--small" data-end="${id}">Beenden</button>`;
+            return `<tr data-row="${id}">
             <td>${ctx.escapeHtml(membership.seasonName)}</td>
             <td><a href="#/groups/${membership.groupId}">${ctx.escapeHtml(membership.groupName)}</a></td>
-            <td>${membership.groupType === 'TEAM' ? ctx.escapeHtml(membership.roleLabel) : '–'}</td>
-            <td>${ctx.escapeHtml(membership.function ?? '–')}</td>
-            <td>${membership.exitDate ? ctx.formatDate(membership.exitDate) : '–'}</td>
-            <td class="table__actions">
-                <button type="button" class="button button--small button--danger" data-delete-membership="${membership.id}">Löschen</button>
-            </td></tr>`);
+            <td data-cell="role">${membership.groupType === 'TEAM' ? ctx.escapeHtml(membership.roleLabel) : '–'}</td>
+            <td data-cell="function">${ctx.escapeHtml(membership.function ?? '–')}</td>
+            <td>${period(membership.seasonStart, membership.exitDate)}</td>
+            <td class="table__actions" data-cell="actions">${actions}</td></tr>`;
+        });
         const derived = data.derived.map((entry) => `<tr>
             <td>${ctx.escapeHtml(entry.seasonName)}</td>
             <td><a href="#/groups/${entry.groupId}">${ctx.escapeHtml(entry.groupName)}</a>
                 <span class="badge">über ${ctx.escapeHtml(entry.via.join(', '))}</span></td>
             <td>–</td><td>–</td>
-            <td>${entry.exitDate ? ctx.formatDate(entry.exitDate) : '–'}</td><td></td></tr>`);
+            <td>${period(entry.seasonStart, entry.exitDate)}</td><td></td></tr>`);
         const all = [...direct, ...derived];
         rows.innerHTML = all.length === 0 ? '<tr><td colspan="6" class="hint">Keiner Gruppe zugeordnet.</td></tr>' : all.join('');
 
-        rows.querySelectorAll('[data-delete-membership]').forEach((button) => button.addEventListener('click', () => {
-            confirmInline(button.closest('table'), DELETE_MEMBERSHIP_WARNING, 'Ja, löschen', async () => {
-                try {
-                    await api.deleteMembership(Number(button.dataset.deleteMembership));
-                    ctx.showToast('Zuordnung gelöscht.');
-                    render(await api.personMemberships(person.id));
-                } catch (error) {
-                    ctx.setMessage('person-groups-error', error instanceof ApiError ? error.message : 'Löschen fehlgeschlagen');
+        /**
+         * Sends a change of a membership and reloads the list.
+         *
+         * @param {number} id Id of the membership.
+         * @param {object} changes Changed attributes.
+         * @param {string} success Toast shown on success.
+         */
+        const change = async (id, changes, success) => {
+            ctx.setMessage('person-groups-error', null);
+            try {
+                await api.updateMembership(id, changes);
+                ctx.showToast(success);
+                render(await api.personMemberships(person.id));
+            } catch (error) {
+                ctx.setMessage('person-groups-error', error instanceof ApiError ? error.message : 'Änderung fehlgeschlagen');
+            }
+        };
+        const find = (button, attribute) => data.memberships.find((item) => item.id === Number(button.dataset[attribute]));
+
+        rows.querySelectorAll('[data-reactivate]').forEach((button) => button.addEventListener('click', () => {
+            change(Number(button.dataset.reactivate), { exitDate: null }, 'Zuordnung wieder aktiv.');
+        }));
+
+        rows.querySelectorAll('[data-delete]').forEach((button) => button.addEventListener('click', async () => {
+            const warning = 'Zuordnungen sollten nur gelöscht werden, wenn sie fehlerhaft erfasst wurden. '
+                + 'Bei einem regulären Abgang bitte stattdessen «Beenden» verwenden.\n\nWirklich löschen?';
+            if (!window.confirm(warning)) {
+                return;
+            }
+            try {
+                await api.deleteMembership(Number(button.dataset.delete));
+                ctx.showToast('Zuordnung gelöscht.');
+                render(await api.personMemberships(person.id));
+            } catch (error) {
+                ctx.setMessage('person-groups-error', error instanceof ApiError ? error.message : 'Löschen fehlgeschlagen');
+            }
+        }));
+
+        rows.querySelectorAll('[data-end]').forEach((button) => button.addEventListener('click', () => {
+            const membership = find(button, 'end');
+            const cell = button.closest('[data-cell="actions"]');
+            const clamped = [today, membership.seasonStart, membership.seasonEnd].sort()[1];
+            cell.innerHTML = `<input type="date" value="${clamped}" min="${membership.seasonStart ?? ''}" max="${membership.seasonEnd ?? ''}" aria-label="Enddatum">
+                <button type="button" class="button button--small button--primary" data-ok>OK</button>
+                <button type="button" class="button button--small" data-cancel>Abbrechen</button>`;
+            cell.querySelector('[data-cancel]').addEventListener('click', () => render(data));
+            cell.querySelector('[data-ok]').addEventListener('click', () => {
+                const value = cell.querySelector('input').value;
+                if (value) {
+                    change(membership.id, { exitDate: value }, 'Zuordnung beendet.');
                 }
+            });
+        }));
+
+        rows.querySelectorAll('[data-edit]').forEach((button) => button.addEventListener('click', () => {
+            const membership = find(button, 'edit');
+            const row = button.closest('tr');
+            if (membership.groupType === 'TEAM') {
+                row.querySelector('[data-cell="role"]').innerHTML = `<select aria-label="Rolle">${
+                    meta.membershipRoles.filter((role) => role.value !== 'MEMBER')
+                        .map((role) => `<option value="${role.value}"${role.value === membership.role ? ' selected' : ''}>${ctx.escapeHtml(role.label)}</option>`)
+                        .join('')}</select>`;
+            }
+            row.querySelector('[data-cell="function"]').innerHTML =
+                `<input type="text" maxlength="100" aria-label="Funktion" value="${ctx.escapeHtml(membership.function ?? '')}">`;
+            const cell = row.querySelector('[data-cell="actions"]');
+            cell.innerHTML = `<button type="button" class="button button--small button--primary" data-save>Speichern</button>
+                <button type="button" class="button button--small" data-cancel>Abbrechen</button>`;
+            cell.querySelector('[data-cancel]').addEventListener('click', () => render(data));
+            cell.querySelector('[data-save]').addEventListener('click', () => {
+                const changes = { function: row.querySelector('[data-cell="function"] input').value };
+                const roleSelect = row.querySelector('[data-cell="role"] select');
+                if (roleSelect) {
+                    changes.role = roleSelect.value;
+                }
+                change(membership.id, changes, 'Zuordnung gespeichert.');
             });
         }));
     }

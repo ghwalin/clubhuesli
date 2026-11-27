@@ -89,7 +89,10 @@
         <div class="grid">
             <div class="field">
                 <label for="assign-person">Person <span class="required">*</span></label>
-                <select id="assign-person" name="personId"></select>
+                <input type="text" id="assign-person-search" list="assign-person-list" autocomplete="off"
+                       placeholder="Name eingeben …">
+                <datalist id="assign-person-list"></datalist>
+                <input type="hidden" id="assign-person" name="personId">
                 <p class="field-error" data-error-for="personId"></p>
             </div>
             <div class="field">
